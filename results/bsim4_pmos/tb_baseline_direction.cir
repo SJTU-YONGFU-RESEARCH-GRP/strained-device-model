@@ -1,0 +1,16 @@
+* baseline strain direction
+        .include bsim4_pmos.subckt
+
+        Valp alpha 0 dc 0.0
+        Veps eps_s 0 dc 0.005
+        Vdd d 0 dc -1.0
+Vgs g 0 dc -0.75
+Vss s 0 dc 0.0
+Vbb b 0 dc 0.0
+
+
+        Xdev d g s b bsim4_pmos W=10u L=180n
+
+        .dc Valp 0.0 1.5707963267948966 0.09817477042468103
+        .print dc v(eps_s) v(alpha) i(Vdd)
+        .end

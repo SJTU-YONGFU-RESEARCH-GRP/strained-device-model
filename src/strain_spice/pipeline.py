@@ -13,9 +13,10 @@ from strain_spice.plots import (
     plot_magnitude_comparison,
     plot_strain_controls,
     plot_transfer_comparison,
+    plot_transient_comparison,
 )
 from strain_spice.report import write_report
-from strain_spice.simulator import NgspiceRunner, parse_print_table, save_csv
+from strain_spice.simulator import NgspiceRunner, SimulationResult, parse_print_table, save_csv
 
 
 @dataclass(frozen=True)
@@ -44,9 +45,9 @@ def run_pipeline(
     runner = NgspiceRunner(binary=config.ngspice_binary)
     workdir = netlists.output_dir
 
-    def simulate(path: Path, name: str):
+    def simulate(path: Path, name: str, analysis: str = "dc") -> SimulationResult:
         output = runner.run(path, workdir=workdir)
-        result = parse_print_table(output, name=name)
+        result = parse_print_table(output, name=name, analysis=analysis)
         save_csv(result, path.with_suffix(".csv"))
         return result
 
@@ -66,6 +67,20 @@ def run_pipeline(
             simulate(path, f"strained_transfer_{index}")
             for index, path in enumerate(netlists.strained_transfer_tbs)
         ]
+
+    transient_baseline = None
+    transient_strained = None
+    if netlists.baseline_transient_tb and netlists.strained_transient_tb:
+        transient_baseline = simulate(
+            netlists.baseline_transient_tb,
+            "baseline_transient",
+            analysis="tran",
+        )
+        transient_strained = simulate(
+            netlists.strained_transient_tb,
+            "strained_transient",
+            analysis="tran",
+        )
 
     figures_dir = output_dir / "figures"
     figures_dir.mkdir(parents=True, exist_ok=True)
@@ -90,6 +105,17 @@ def run_pipeline(
         )
         figure_paths["Transfer characteristics"] = transfer_figure
 
+    if transient_baseline and transient_strained:
+        transient_figure = figures_dir / "transient_comparison.svg"
+        plot_transient_comparison(transient_baseline, transient_strained, transient_figure)
+        figure_paths["Dynamic transient response"] = transient_figure
+        plot_strain_controls(
+            transient_strained,
+            figures_dir / "transient_controls.svg",
+            config,
+        )
+        figure_paths["Dynamic parameter shifts"] = figures_dir / "transient_controls.svg"
+
     report_path = write_report(
         config=config,
         device_path=device_path,
@@ -100,6 +126,8 @@ def run_pipeline(
         direction_strained=direction_strained,
         transfer_baseline=transfer_baseline,
         transfer_strained=transfer_strained,
+        transient_baseline=transient_baseline,
+        transient_strained=transient_strained,
         figure_paths=figure_paths,
     )
 

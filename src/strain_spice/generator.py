@@ -6,20 +6,52 @@ from dataclasses import dataclass
 from pathlib import Path
 from textwrap import dedent
 
-from strain_spice.config import BiasConfig, StrainSpiceConfig
+from strain_spice.config import BiasConfig, DynamicStrainConfig, StrainProfileConfig, StrainSpiceConfig
 from strain_spice.parser import SubcktDefinition
 
 
 STRAIN_ENGINE_SPICE = dedent(
     """
     .subckt strain_engine_spice eps_s alpha dvth dmu
-    .param nu=0.47 beta=1.0 gamma=0.05
-    Beps_t n_eps_t 0 V = '{ (V(eps_s)/2) * (1 - nu + (1 + nu) * cos(2 * V(alpha))) }'
-    Bdvth dvth 0 V = '{ -beta * V(n_eps_t) }'
-    Bdmu dmu 0 V = '{ gamma * V(n_eps_t) }'
+    .param nu=0.47 beta=1.0 gamma=0.05 beta_r=0.0 gamma_r=0.0
+    .param tau_m=1e-15 tau_load=1e-12 tau_unload=1e-12
+    Rmech eps_s eps_s_filt 1
+    Cmech eps_s_filt 0 {tau_m}
+    Beps_raw n_eps_t_raw 0 V = '{ (V(eps_s_filt)/2) * (1 - nu + (1 + nu) * cos(2 * V(alpha))) }'
+    Ghist n_eps_t 0 cur = '{ (V(n_eps_t_raw)-V(n_eps_t)) / ((V(n_eps_t_raw) >= V(n_eps_t)) ? tau_load : tau_unload) }'
+    Chist n_eps_t 0 1
+    Bdvth dvth 0 V = '{ -beta * V(n_eps_t) - beta_r * ddt(V(n_eps_t)) }'
+    Bdmu dmu 0 V = '{ gamma * V(n_eps_t) + gamma_r * ddt(V(n_eps_t)) }'
     .ends strain_engine_spice
     """
 ).strip()
+
+
+def _mechanical_tau(dynamic: DynamicStrainConfig) -> float:
+    """Return the RC time constant used for the mechanical filter."""
+    if dynamic.mechanical_tau <= 0.0:
+        return 1e-15
+    return dynamic.mechanical_tau
+
+
+def _hysteresis_taus(dynamic: DynamicStrainConfig) -> tuple[float, float]:
+    """Return load/unload time constants for the hysteresis state node."""
+    if not dynamic.hysteresis.enabled:
+        return 1e-12, 1e-12
+    return max(dynamic.hysteresis.tau_load, 1e-15), max(dynamic.hysteresis.tau_unload, 1e-15)
+
+
+def _strain_engine_params(config: StrainSpiceConfig) -> str:
+    """Format strain-engine parameter assignments for a wrapper instance."""
+    strain = config.strain
+    dynamic = config.dynamic
+    tau_m = _mechanical_tau(dynamic)
+    tau_load, tau_unload = _hysteresis_taus(dynamic)
+    return (
+        f"nu={strain.nu} beta={strain.beta} gamma={strain.gamma} "
+        f"beta_r={dynamic.beta_r} gamma_r={dynamic.gamma_r} "
+        f"tau_m={tau_m} tau_load={tau_load} tau_unload={tau_unload}"
+    )
 
 
 @dataclass(frozen=True)
@@ -35,6 +67,8 @@ class GeneratedNetlists:
     strained_direction_tb: Path
     baseline_transfer_tbs: list[Path]
     strained_transfer_tbs: list[Path]
+    baseline_transient_tb: Path | None = None
+    strained_transient_tb: Path | None = None
 
 
 def _format_instance_params(params: dict[str, float | str]) -> str:
@@ -64,7 +98,9 @@ def _wrapper_subckt(device: SubcktDefinition, config: StrainSpiceConfig) -> str:
         f"""
         .subckt strain_aware_device d g s b eps_s alpha
         .param nu={strain.nu} beta={strain.beta} gamma={strain.gamma} vth0={strain.vth0} mu0={strain.mu0}
-        Xse eps_s alpha dvth dmu strain_engine_spice nu=nu beta=beta gamma=gamma
+        .param beta_r={config.dynamic.beta_r} gamma_r={config.dynamic.gamma_r} tau_m={_mechanical_tau(config.dynamic)}
+        .param tau_load={_hysteresis_taus(config.dynamic)[0]} tau_unload={_hysteresis_taus(config.dynamic)[1]}
+        Xse eps_s alpha dvth dmu strain_engine_spice {_strain_engine_params(config)}
         E_gshift g_eff g dvth 0 -1
         {device_instance}
         .ends strain_aware_device
@@ -107,8 +143,85 @@ def _strained_instance(config: StrainSpiceConfig) -> str:
     return (
         "Xwrap d g s b eps_s alpha strain_aware_device "
         f"nu={strain.nu} beta={strain.beta} gamma={strain.gamma} "
-        f"vth0={strain.vth0} mu0={strain.mu0}"
+        f"vth0={strain.vth0} mu0={strain.mu0} {_strain_engine_params(config)}"
     )
+
+
+def _strain_source_lines(profile: StrainProfileConfig) -> tuple[str, str]:
+    """Return SPICE source declarations for applied strain and angle."""
+    profile_type = profile.type.lower()
+    if profile_type == "sine":
+        eps_source = (
+            f"Veps eps_s 0 SIN({profile.offset} {profile.amplitude} "
+            f"{profile.frequency} 0 0 0)"
+        )
+    elif profile_type == "pwl":
+        half_period = 0.5 / max(profile.frequency, 1e-6)
+        peak = profile.offset + profile.amplitude
+        eps_source = (
+            f"Veps eps_s 0 PWL(0 {profile.offset} "
+            f"{half_period:.6g} {peak:.6g} "
+            f"{2 * half_period:.6g} {profile.offset})"
+        )
+    else:
+        eps_source = f"Veps eps_s 0 dc {profile.offset}"
+
+    if profile.alpha_rate != 0.0:
+        alpha_source = (
+            f"Balpha alpha 0 V = '{{ {profile.alpha} + {profile.alpha_rate} * time }}'"
+        )
+    else:
+        alpha_source = f"Valp alpha 0 dc {profile.alpha}"
+
+    return eps_source, alpha_source
+
+
+def _transient_testbench(
+    *,
+    include_files: list[str],
+    instance_line: str,
+    bias: str,
+    mobility_bias: str,
+    profile: StrainProfileConfig,
+    tstop: float,
+    tstep: float,
+    title: str,
+    wrapped: bool,
+) -> str:
+    """Build a transient simulation testbench with time-varying strain inputs."""
+    includes = "\n".join(f".include {name}" for name in include_files)
+    eps_source, alpha_source = _strain_source_lines(profile)
+    print_vars = ["time", "v(eps_s)", "v(alpha)", "i(Vdd)"]
+
+    if wrapped:
+        return dedent(
+            f"""
+            * {title}
+            {includes}
+            {eps_source}
+            {alpha_source}
+            {bias}
+            {instance_line}
+            .tran {tstep} {tstop}
+            .print tran {' '.join(print_vars)}
+            .end
+            """
+        ).strip() + "\n"
+
+    return dedent(
+        f"""
+        * {title}
+        {includes}
+        {eps_source}
+        {alpha_source}
+        {bias}
+        {mobility_bias}
+        {instance_line}
+        .tran {tstep} {tstop}
+        .print tran {' '.join(print_vars)}
+        .end
+        """
+    ).strip() + "\n"
 
 
 def _step_size(total: float, steps: int) -> float:
@@ -353,6 +466,40 @@ def generate_netlists(
             baseline_transfer_tbs.append(baseline_path)
             strained_transfer_tbs.append(strained_path)
 
+    baseline_transient_tb = None
+    strained_transient_tb = None
+    if config.transient.enabled:
+        baseline_transient_tb = output_dir / "tb_baseline_transient.cir"
+        strained_transient_tb = output_dir / "tb_strained_transient.cir"
+        baseline_transient_tb.write_text(
+            _transient_testbench(
+                include_files=[device_copy.name],
+                instance_line=_baseline_instance(device, config),
+                bias=bias,
+                mobility_bias=mobility_bias,
+                profile=config.transient.profile,
+                tstop=config.transient.tstop,
+                tstep=config.transient.tstep,
+                title="baseline transient strain profile",
+                wrapped=False,
+            ),
+            encoding="utf-8",
+        )
+        strained_transient_tb.write_text(
+            _transient_testbench(
+                include_files=["strain_wrap.inc"],
+                instance_line=_strained_instance(config),
+                bias=bias,
+                mobility_bias="",
+                profile=config.transient.profile,
+                tstop=config.transient.tstop,
+                tstep=config.transient.tstep,
+                title="strained transient strain profile",
+                wrapped=True,
+            ),
+            encoding="utf-8",
+        )
+
     return GeneratedNetlists(
         output_dir=output_dir,
         device_copy=device_copy,
@@ -363,4 +510,6 @@ def generate_netlists(
         strained_direction_tb=strained_direction,
         baseline_transfer_tbs=baseline_transfer_tbs,
         strained_transfer_tbs=strained_transfer_tbs,
+        baseline_transient_tb=baseline_transient_tb,
+        strained_transient_tb=strained_transient_tb,
     )

@@ -22,11 +22,19 @@ class ComparisonMetrics:
     relative_change_pct: float
 
 
+def _sanitize_table_cell(value: str) -> str:
+    """Escape characters that would break markdown table rendering."""
+    return value.replace("|", "&#124;")
+
+
 def _format_table(headers: list[str], rows: list[list[str]]) -> str:
     """Render a markdown table."""
-    header_line = "| " + " | ".join(headers) + " |"
-    separator = "| " + " | ".join(["---"] * len(headers)) + " |"
-    body = "\n".join("| " + " | ".join(row) + " |" for row in rows)
+    safe_headers = [_sanitize_table_cell(header) for header in headers]
+    header_line = "| " + " | ".join(safe_headers) + " |"
+    separator = "| " + " | ".join(["---"] * len(safe_headers)) + " |"
+    body = "\n".join(
+        "| " + " | ".join(_sanitize_table_cell(cell) for cell in row) + " |" for row in rows
+    )
     return "\n".join([header_line, separator, body])
 
 
@@ -75,6 +83,8 @@ def write_report(
     direction_strained: SimulationResult,
     transfer_baseline: list[SimulationResult] | None,
     transfer_strained: list[SimulationResult] | None,
+    transient_baseline: SimulationResult | None = None,
+    transient_strained: SimulationResult | None = None,
     figure_paths: dict[str, Path],
 ) -> Path:
     """Write a markdown report comparing pre and post strain effects."""
@@ -119,6 +129,24 @@ def write_report(
                 ["γ", f"{config.strain.gamma}", "Mobility sensitivity"],
                 ["Vth0", f"{config.strain.vth0}", "Unstrained threshold reference"],
                 ["μ0", f"{config.strain.mu0}", "Unstrained mobility reference"],
+            ],
+        ),
+        "",
+        "## Dynamic device model parameters",
+        "",
+        _format_table(
+            ["Parameter", "Value", "Description"],
+            [
+                ["τ_m", f"{config.dynamic.mechanical_tau}", "Mechanical low-pass time constant [s] (Option 2)"],
+                ["β_r", f"{config.dynamic.beta_r}", "Threshold strain-rate sensitivity (Option 3)"],
+                ["γ_r", f"{config.dynamic.gamma_r}", "Mobility strain-rate sensitivity (Option 3)"],
+                [
+                    "Hysteresis",
+                    "enabled" if config.dynamic.hysteresis.enabled else "disabled",
+                    "Asymmetric load/unload tracking (Option 4)",
+                ],
+                ["τ_load", f"{config.dynamic.hysteresis.tau_load}", "Channel-strain loading time constant [s]"],
+                ["τ_unload", f"{config.dynamic.hysteresis.tau_unload}", "Channel-strain unloading time constant [s]"],
             ],
         ),
         "",
@@ -182,6 +210,27 @@ def write_report(
                 f"strained = {id_strained:.6g} A, Δ = {delta:.2f}%"
             )
         lines.append("")
+
+    if transient_baseline and transient_strained:
+        id_base = np.abs(find_column(transient_baseline, ("i(vdd)",)))
+        id_strained = np.abs(find_column(transient_strained, ("i(vdd)",)))
+        peak_delta = float(
+            (np.max(id_strained) - np.max(id_base)) / max(np.max(id_base), 1e-15) * 100.0
+        )
+        lines.extend(
+            [
+                "## Transient strain profile notes",
+                "",
+                f"- Profile: `{config.transient.profile.type}` "
+                f"(amplitude = {config.transient.profile.amplitude * 100:.3f}%, "
+                f"frequency = {config.transient.profile.frequency:.3g} Hz)",
+                f"- Simulation window: 0 to {config.transient.tstop:.3g} s "
+                f"(step = {config.transient.tstep:.3g} s)",
+                f"- Peak |I_D| baseline = {float(np.max(id_base)):.6g} A, "
+                f"strained = {float(np.max(id_strained)):.6g} A, Δ = {peak_delta:.2f}%",
+                "",
+            ]
+        )
 
     lines.extend(
         [

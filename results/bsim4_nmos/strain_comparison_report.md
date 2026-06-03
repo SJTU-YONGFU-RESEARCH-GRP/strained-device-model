@@ -1,14 +1,14 @@
 # BSIM4 NMOS strain evaluation
 
-Generated: 2026-06-03 12:29 UTC
+Generated: 2026-06-03 13:30 UTC
 
 ## Overview
 
 This report compares simulations **without** the strain wrapper (baseline device only)
 and **with** the generated strain-aware wrapper subcircuit.
 
-- Device netlist: `models/bsim4_nmos.subckt`
-- Wrapper output directory: `results/bsim4_nmos`
+- Device netlist: `/mnt/d/proj/strained-device-model/models/bsim4_nmos.subckt`
+- Wrapper output directory: `/mnt/d/proj/strained-device-model/results/bsim4_nmos`
 
 ## Strain model parameters
 
@@ -20,9 +20,20 @@ and **with** the generated strain-aware wrapper subcircuit.
 | Vth0 | 0.4 | Unstrained threshold reference |
 | μ0 | 0.04 | Unstrained mobility reference |
 
+## Dynamic device model parameters
+
+| Parameter | Value | Description |
+| --- | --- | --- |
+| τ_m | 0.0 | Mechanical low-pass time constant [s] (Option 2) |
+| β_r | 0.0 | Threshold strain-rate sensitivity (Option 3) |
+| γ_r | 0.0 | Mobility strain-rate sensitivity (Option 3) |
+| Hysteresis | disabled | Asymmetric load/unload tracking (Option 4) |
+| τ_load | 0.05 | Channel-strain loading time constant [s] |
+| τ_unload | 0.2 | Channel-strain unloading time constant [s] |
+
 ## Summary metrics
 
-| Case | Baseline |I_D| [A] | Strained |I_D| [A] | Relative change [%] |
+| Case | Baseline &#124;I_D&#124; [A] | Strained &#124;I_D&#124; [A] | Relative change [%] |
 | --- | --- | --- | --- |
 | Strain magnitude sweep | 0.00024057 | 0.000251412 | 4.507 |
 | Strain direction sweep (mean) | 0.00024057 | 0.000243452 | 1.198 |
@@ -80,5 +91,5 @@ and **with** the generated strain-aware wrapper subcircuit.
 ## How to reproduce
 
 ```bash
-strain-spice run --device models/bsim4_nmos.subckt --config <your-config.yaml> --output results/bsim4_nmos
+strain-spice run --device /mnt/d/proj/strained-device-model/models/bsim4_nmos.subckt --config <your-config.yaml> --output /mnt/d/proj/strained-device-model/results/bsim4_nmos
 ```

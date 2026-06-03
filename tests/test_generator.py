@@ -28,5 +28,6 @@ def test_generate_wrapper_contains_strain_engine(project_root: Path, tmp_path: P
 
     assert "strain_engine_spice" in wrapper_text
     assert "strain_aware_device" in wrapper_text
+    assert "ddt(V(n_eps_t))" in wrapper_text
     assert "bsim3_nmos" in wrapper_text
     assert netlists.strained_magnitude_tb.exists()

@@ -9,7 +9,8 @@
 
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 VENV_DIR="${ROOT_DIR}/.venv"
 PYTHON="${PYTHON:-python3}"
 PIP="${PIP:-pip}"
@@ -186,6 +187,9 @@ Run a bundled evaluation:
     --device models/bsim4_nmos.subckt \\
     --config configs/bsim4_nmos.yaml \\
     --output results/bsim4_nmos
+
+Run all bundled evaluations:
+  ./scripts/run_all.sh
 
 Run tests (dev install):
   pytest

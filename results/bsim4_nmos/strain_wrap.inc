@@ -1,8 +1,13 @@
 .subckt strain_engine_spice eps_s alpha dvth dmu
-.param nu=0.47 beta=1.0 gamma=0.05
-Beps_t n_eps_t 0 V = '{ (V(eps_s)/2) * (1 - nu + (1 + nu) * cos(2 * V(alpha))) }'
-Bdvth dvth 0 V = '{ -beta * V(n_eps_t) }'
-Bdmu dmu 0 V = '{ gamma * V(n_eps_t) }'
+.param nu=0.47 beta=1.0 gamma=0.05 beta_r=0.0 gamma_r=0.0
+.param tau_m=1e-15 tau_load=1e-12 tau_unload=1e-12
+Rmech eps_s eps_s_filt 1
+Cmech eps_s_filt 0 {tau_m}
+Beps_raw n_eps_t_raw 0 V = '{ (V(eps_s_filt)/2) * (1 - nu + (1 + nu) * cos(2 * V(alpha))) }'
+Ghist n_eps_t 0 cur = '{ (V(n_eps_t_raw)-V(n_eps_t)) / ((V(n_eps_t_raw) >= V(n_eps_t)) ? tau_load : tau_unload) }'
+Chist n_eps_t 0 1
+Bdvth dvth 0 V = '{ -beta * V(n_eps_t) - beta_r * ddt(V(n_eps_t)) }'
+Bdmu dmu 0 V = '{ gamma * V(n_eps_t) + gamma_r * ddt(V(n_eps_t)) }'
 .ends strain_engine_spice
 
 .subckt bsim4_nmos d g s b
@@ -21,7 +26,9 @@ M1 d g s b bsim4_nmos_mod W={W} L={L}
 
 .subckt strain_aware_device d g s b eps_s alpha
 .param nu=0.47 beta=0.8 gamma=0.0 vth0=0.4 mu0=0.04
-Xse eps_s alpha dvth dmu strain_engine_spice nu=nu beta=beta gamma=gamma
+.param beta_r=0.0 gamma_r=0.0 tau_m=1e-15
+.param tau_load=1e-12 tau_unload=1e-12
+Xse eps_s alpha dvth dmu strain_engine_spice nu=0.47 beta=0.8 gamma=0.0 beta_r=0.0 gamma_r=0.0 tau_m=1e-15 tau_load=1e-12 tau_unload=1e-12
 E_gshift g_eff g dvth 0 -1
 Xdev d g_eff s b bsim4_nmos W=10u L=180n
 .ends strain_aware_device

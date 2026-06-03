@@ -6,7 +6,7 @@
 
 **Repository:** [SJTU-YONGFU-RESEARCH-GRP/strained-device-model](https://github.com/SJTU-YONGFU-RESEARCH-GRP/strained-device-model)
 
-This repository provides a **device-agnostic strain-aware SPICE wrapper** and a Python workflow to wrap user `.subckt` models, run **ngspice** simulations, and generate pre/post strain comparison figures plus a markdown report. Reference **BSIM3/BSIM4** MOS subcircuits and matching YAML configs are included for evaluation.
+This repository provides a **device-agnostic strain-aware SPICE wrapper** and a Python workflow to wrap user `.subckt` models, run **ngspice** simulations, and generate pre/post strain comparison figures plus a markdown report. The strain engine supports the static Liu et al. channel map and optional **dynamic extensions** (mechanical bandwidth, strain-rate sensitivity, hysteresis, and transient strain profiles). Reference **BSIM3/BSIM4** MOS subcircuits and matching YAML configs are included for evaluation.
 
 - **Repository**: https://github.com/SJTU-YONGFU-RESEARCH-GRP/strained-device-model
 - **Python package**: `strain-spice` (`src/strain_spice/`)
@@ -18,6 +18,8 @@ This repository provides a **device-agnostic strain-aware SPICE wrapper** and a 
 
 - [Features](#features)
 - [Strain model](#strain-model)
+  - [Static core](#static-core)
+  - [Dynamic device extensions (Options 1–4)](#dynamic-device-extensions-options-14)
 - [Requirements](#requirements)
 - [Quick start](#quick-start)
   - [Installation](#installation)
@@ -26,6 +28,7 @@ This repository provides a **device-agnostic strain-aware SPICE wrapper** and a 
 - [Evaluation models](#evaluation-models)
 - [Outputs](#outputs)
 - [Configuration](#configuration)
+  - [Dynamic and transient options](#dynamic-and-transient-options)
 - [Python API](#python-api)
 - [Project layout](#project-layout)
 - [Development](#development)
@@ -37,14 +40,17 @@ This repository provides a **device-agnostic strain-aware SPICE wrapper** and a 
 
 - Wrap any user SPICE subcircuit with a generated **strain-aware wrapper** (`strain_wrap.inc`).
 - Map external mechanical loading to channel strain, then to threshold and mobility shifts.
-- Run baseline (unwrapped) and strained **DC sweeps** with ngspice.
-- Export **SVG figures**, **CSV tables**, and a **markdown comparison report**.
+- **Static model** (Liu et al., IEEE TNANO 2022) for DC sweeps, plus optional **dynamic extensions** for time-varying and rate-dependent behavior.
+- Run baseline (unwrapped) and strained **DC and transient** simulations with ngspice.
+- Export **SVG figures**, **CSV tables**, and a **markdown comparison report** (including dynamic parameter tables when enabled).
 - Ship reference **BSIM3v3** and **BSIM4** NMOS/PMOS evaluation netlists for ngspice.
 - Optional **Verilog-A** strain engine (`va/strain_engine.va`) for Spectre-style flows.
 
 ## Strain model
 
-The wrapper implements the mechanical and electrical mapping from Liu et al. (IEEE TNANO 2022):
+The wrapper implements the mechanical and electrical mapping from Liu et al. (IEEE TNANO 2022), extended with device-level dynamic effects for time-varying loading.
+
+### Static core
 
 **Channel strain** from applied strain `ε_S` and force angle `α` (rad):
 
@@ -61,7 +67,46 @@ Vth_eff = Vth0 − β · ε_T
 
 The generated SPICE wrapper applies threshold shift through an effective gate-voltage source (`E_gshift`). When `mobility_control_port` is set in the YAML config, mobility modulation is routed to a device control port; BSIM evaluation configs use **threshold-shift-only** coupling.
 
-Implementation details live in `src/strain_spice/strain_math.py` and `src/strain_spice/generator.py`.
+### Dynamic device extensions (Options 1–4)
+
+Four optional extensions model mechanical lag, strain-rate sensitivity, and load/unload asymmetry. They are implemented in the embedded `strain_engine_spice` subcircuit (and mirrored in `va/strain_engine.va` for Verilog-A flows):
+
+```mermaid
+flowchart LR
+  epsS["ε_S (applied strain)"]
+  mech["Option 2: RC low-pass (τ_m)"]
+  geom["Liu channel map → ε_T,raw"]
+  hyst["Option 4: load/unload tracking"]
+  rate["dε_T/dt"]
+  params["ΔVth, Δμ"]
+  dev["Device wrapper"]
+
+  epsS --> mech --> geom --> hyst --> rate
+  hyst --> params
+  rate --> params
+  params --> dev
+```
+
+| Option | YAML keys | Effect |
+| --- | --- | --- |
+| 1. Time-varying strain | `transient.enabled`, `transient.profile` | `.tran` testbench with sine or PWL strain sources |
+| 2. Mechanical bandwidth | `dynamic.mechanical_tau` | RC low-pass on `ε_S` before the Liu channel map |
+| 3. Strain-rate terms | `dynamic.beta_r`, `dynamic.gamma_r` | Adds `dε_T/dt` to ΔVth and Δμ |
+| 4. Hysteresis | `dynamic.hysteresis.*` | Asymmetric load/unload tracking on `ε_T` |
+
+**Combined dynamic equations** (when Options 2–4 are active):
+
+```
+ε_S,eff = LP(ε_S; τ_m)
+ε_T,raw = (ε_S,eff / 2) · [1 − ν + (1 + ν) cos(2α)]
+dε_T/dt = (ε_T,raw − ε_T) / τ_eff     where τ_eff = τ_load if loading, τ_unload if unloading
+Vth_eff = Vth0 − β · ε_T − β_r · dε_T/dt
+μ_eff   = μ0  + γ · ε_T + γ_r · dε_T/dt
+```
+
+Set all dynamic values to zero (or leave defaults) to recover the original static model. Option 1 only affects how `ε_S` and `α` are driven in simulation; Options 2–4 change the strain-to-parameter mapping inside the engine.
+
+Implementation details live in `src/strain_spice/strain_math.py` (Python reference) and `src/strain_spice/generator.py` (SPICE netlist generation).
 
 ## Requirements
 
@@ -114,6 +159,23 @@ strain-spice run --device models/bsim4_pmos.subckt --config configs/bsim4_pmos.y
 strain-spice run --device models/bsim4l14_nmos.subckt --config configs/bsim4l14_nmos.yaml --output results/bsim4l14_nmos
 ```
 
+**Dynamic strain evaluation** (Options 1–4 enabled):
+
+```bash
+strain-spice run \
+  --device models/bsim4_nmos.subckt \
+  --config configs/bsim4_nmos_dynamic.yaml \
+  --output results/bsim4_nmos_dynamic
+```
+
+This adds transient testbenches (`tb_*_transient.cir`), dynamic parameter-shift plots, and a drain-current-vs-time comparison figure alongside the standard DC sweep outputs.
+
+Run **all** bundled evaluations (static + dynamic):
+
+```bash
+./scripts/run_all.sh
+```
+
 ### Wrap a custom device
 
 1. Provide a `.subckt` netlist with at least `d`, `g`, and `s` ports.
@@ -137,7 +199,7 @@ Reference MOS subcircuits under `models/`:
 |------------|------|---------------|-----------------|
 | `models/bsim3_nmos.subckt` | NMOS | 8 (BSIM3v3) | `configs/bsim3_nmos.yaml` |
 | `models/bsim3_pmos.subckt` | PMOS | 8 (BSIM3v3) | `configs/bsim3_pmos.yaml` |
-| `models/bsim4_nmos.subckt` | NMOS | 54 (BSIM4) | `configs/bsim4_nmos.yaml` |
+| `models/bsim4_nmos.subckt` | NMOS | 54 (BSIM4) | `configs/bsim4_nmos.yaml`, `configs/bsim4_nmos_dynamic.yaml` |
 | `models/bsim4_pmos.subckt` | PMOS | 54 (BSIM4) | `configs/bsim4_pmos.yaml` |
 | `models/bsim4l14_nmos.subckt` | NMOS | 14 (BSIM4 alt.) | `configs/bsim4l14_nmos.yaml` |
 
@@ -150,10 +212,13 @@ Each run writes to the directory passed to `--output`:
 | Artifact | Description |
 |----------|-------------|
 | `strain_wrap.inc` | Generated strain engine + wrapper + embedded device |
-| `tb_baseline_*.cir`, `tb_strained_*.cir` | ngspice testbenches |
-| `*.csv` | Parsed DC sweep tables |
+| `tb_baseline_*.cir`, `tb_strained_*.cir` | ngspice testbenches (DC magnitude, direction, transfer) |
+| `tb_*_transient.cir` | Transient testbenches (when `transient.enabled: true`) |
+| `*.csv` | Parsed DC and transient sweep tables |
 | `figures/*.svg` | Pre/post comparison plots |
-| `strain_comparison_report.md` | Summary report with metrics and embedded figures |
+| `figures/transient_comparison.svg` | Drain current vs time under dynamic strain (transient runs) |
+| `figures/transient_controls.svg` | ΔVth and Δμ vs time (transient runs) |
+| `strain_comparison_report.md` | Summary report with static/dynamic parameters, metrics, and embedded figures |
 
 ## Configuration
 
@@ -202,6 +267,35 @@ sweeps:
 ```
 
 Strain inputs are encoded as control voltages in simulation (`0.005` V corresponds to `0.5%` strain).
+
+### Dynamic and transient options
+
+Add `dynamic` and `transient` blocks to enable the extended model. Omit them (or use zero defaults) for static-only runs:
+
+```yaml
+dynamic:
+  mechanical_tau: 0.05      # Option 2: RC time constant on ε_S [s]; 0 = disabled
+  beta_r: 2.0               # Option 3: threshold strain-rate sensitivity
+  gamma_r: 0.0              # Option 3: mobility strain-rate sensitivity
+  hysteresis:               # Option 4: asymmetric load/unload tracking
+    enabled: true
+    tau_load: 0.02          # loading time constant [s]
+    tau_unload: 0.10        # unloading time constant [s]
+
+transient:
+  enabled: true             # Option 1: generate .tran testbenches
+  tstop: 5.0                # simulation end time [s]
+  tstep: 0.01               # time step [s]
+  profile:
+    type: sine              # sine | pwl | dc
+    amplitude: 0.005        # peak strain (0.005 = 0.5%)
+    frequency: 0.3          # Hz (sine/pwl)
+    offset: 0.0
+    alpha: 0.0              # fixed force angle [rad]
+    alpha_rate: 0.0         # optional dα/dt [rad/s]; uses a behavioral source when non-zero
+```
+
+See `configs/bsim4_nmos_dynamic.yaml` for a complete working example with all four options enabled.
 
 ## Python API
 

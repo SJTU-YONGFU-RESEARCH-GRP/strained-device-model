@@ -19,3 +19,5 @@ src/strain_spice.egg-info/requires.txt
 src/strain_spice.egg-info/top_level.txt
 tests/test_generator.py
 tests/test_parser.py
+tests/test_report.py
+tests/test_strain_math.py

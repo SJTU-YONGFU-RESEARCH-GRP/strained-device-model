@@ -11,10 +11,11 @@ import numpy as np
 
 @dataclass(frozen=True)
 class SimulationResult:
-    """Parsed ngspice DC sweep data."""
+    """Parsed ngspice tabular output."""
 
     name: str
     columns: dict[str, np.ndarray]
+    analysis: str = "dc"
 
     @property
     def row_count(self) -> int:
@@ -49,7 +50,7 @@ class NgspiceRunner:
         return output
 
 
-def parse_print_table(output: str, name: str) -> SimulationResult:
+def parse_print_table(output: str, name: str, analysis: str = "dc") -> SimulationResult:
     """Parse ngspice ``Index`` tables from batch output."""
     lines = output.splitlines()
     header_index = None
@@ -89,7 +90,7 @@ def parse_print_table(output: str, name: str) -> SimulationResult:
 
     data = np.array(rows, dtype=float)
     columns = {name_: data[:, idx] for idx, name_ in enumerate(column_names)}
-    return SimulationResult(name=name, columns=columns)
+    return SimulationResult(name=name, columns=columns, analysis=analysis)
 
 
 def save_csv(result: SimulationResult, path: Path) -> None:
