@@ -67,10 +67,10 @@ This work contributes:
 - Wrap any user SPICE subcircuit with a generated **strain-aware wrapper** (`strain_wrap.inc`).
 - Map external mechanical loading to channel strain, then to threshold and mobility shifts (direction-dependent for a single wrapped device).
 - **Static model** (Liu et al., IEEE TNANO 2022) for DC sweeps, plus optional **dynamic extensions** for time-varying and rate-dependent behavior.
-- Run baseline (unwrapped) and strained **DC and transient** simulations with ngspice.
+- Run baseline (unwrapped) and strained **DC and transient** simulations with **ngspice** or **Cadence Spectre** (`simulator: spectre` / `--simulator spectre`).
 - Export **SVG figures**, **CSV tables**, and a **markdown comparison report** (including dynamic parameter tables when enabled).
 - Ship reference **BSIM3v3** and **BSIM4** NMOS/PMOS evaluation netlists for ngspice.
-- Optional **Verilog-A** strain engine (`va/strain_engine.va`) for Spectre-style flows.
+- **Verilog-A** strain engine (`va/strain_engine.va`) used automatically for Spectre runs; embedded SPICE engine for ngspice.
 
 ## Strain model
 
@@ -158,7 +158,7 @@ Implementation details live in `src/strain_spice/strain_math.py` (Python referen
 Optional:
 
 - **OpenVAF** — compile `va/strain_engine.va` to OSDI if you extend the flow for Verilog-A in ngspice
-- **Cadence Spectre** — use `va/strain_engine.va` with an AHDL include in your own netlist flow
+- **Cadence Spectre** — `strain-spice run --simulator spectre` (or `simulator: spectre` in YAML); `./scripts/run_all.sh` runs a Spectre smoke job when `spectre` is on `PATH`
 
 ## Quick start
 

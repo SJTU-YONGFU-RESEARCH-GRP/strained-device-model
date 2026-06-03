@@ -35,6 +35,12 @@ def build_parser() -> argparse.ArgumentParser:
         default=Path("results"),
         help="Output directory for generated netlists, CSV, figures, and markdown.",
     )
+    run_parser.add_argument(
+        "--simulator",
+        choices=["ngspice", "spectre"],
+        default=None,
+        help="Circuit simulator backend (overrides config simulator field).",
+    )
 
     return parser
 
@@ -46,6 +52,8 @@ def main() -> None:
 
     if args.command == "run":
         config = StrainSpiceConfig.from_yaml(args.config)
+        if args.simulator is not None:
+            config.simulator = args.simulator
         result = run_pipeline(args.device, config, args.output)
         print(f"Generated wrapper: {result.netlists.wrapper}")
         print(f"Report: {result.report_path}")

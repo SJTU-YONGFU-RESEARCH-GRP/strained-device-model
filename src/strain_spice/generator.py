@@ -6,8 +6,38 @@ from dataclasses import dataclass
 from pathlib import Path
 from textwrap import dedent
 
-from strain_spice.config import BiasConfig, DynamicStrainConfig, StrainProfileConfig, StrainSpiceConfig
+from strain_spice.config import (
+    BiasConfig,
+    DynamicStrainConfig,
+    SimulatorKind,
+    StrainProfileConfig,
+    StrainSpiceConfig,
+)
 from strain_spice.parser import SubcktDefinition
+
+
+def _repo_root() -> Path:
+    """Return the repository root directory."""
+    return Path(__file__).resolve().parents[2]
+
+
+def _netlist_extension(simulator: SimulatorKind) -> str:
+    """Return the netlist filename extension for the selected simulator."""
+    return ".scs" if simulator == "spectre" else ".cir"
+
+
+def _netlist_header(simulator: SimulatorKind) -> str:
+    """Return a language pragma required by some simulator netlist dialects."""
+    if simulator == "spectre":
+        return "simulator lang=spice"
+    return ""
+
+
+def _include_statement(simulator: SimulatorKind, filename: str) -> str:
+    """Return an include line compatible with the target simulator."""
+    if simulator == "spectre":
+        return f'include "{filename}"'
+    return f".include {filename}"
 
 
 STRAIN_ENGINE_SPICE = dedent(
@@ -79,7 +109,19 @@ def _format_instance_params(params: dict[str, float | str]) -> str:
     return f" {assignments}"
 
 
-def _wrapper_subckt(device: SubcktDefinition, config: StrainSpiceConfig) -> str:
+def _strain_engine_instance(config: StrainSpiceConfig, simulator: SimulatorKind) -> str:
+    """Return the strain-engine instance line for the selected simulator."""
+    params = _strain_engine_params(config)
+    if simulator == "spectre":
+        return f"Xse eps_s alpha dvth dmu strain_engine {params}"
+    return f"Xse eps_s alpha dvth dmu strain_engine_spice {params}"
+
+
+def _wrapper_subckt(
+    device: SubcktDefinition,
+    config: StrainSpiceConfig,
+    simulator: SimulatorKind,
+) -> str:
     """Build the strain-aware wrapper subcircuit."""
     device_cfg = config.device
     strain = config.strain
@@ -93,14 +135,16 @@ def _wrapper_subckt(device: SubcktDefinition, config: StrainSpiceConfig) -> str:
         device_instance += " dmu"
 
     device_instance += f" {device.name}{_format_instance_params(device_cfg.instance_params)}"
+    engine = _strain_engine_instance(config, simulator)
+    ahdl = 'ahdl_include "strain_engine.va"\n' if simulator == "spectre" else ""
 
     return dedent(
         f"""
-        .subckt strain_aware_device d g s b eps_s alpha
+        {ahdl}.subckt strain_aware_device d g s b eps_s alpha
         .param nu={strain.nu} beta={strain.beta} gamma={strain.gamma} vth0={strain.vth0} mu0={strain.mu0}
         .param beta_r={config.dynamic.beta_r} gamma_r={config.dynamic.gamma_r} tau_m={_mechanical_tau(config.dynamic)}
         .param tau_load={_hysteresis_taus(config.dynamic)[0]} tau_unload={_hysteresis_taus(config.dynamic)[1]}
-        Xse eps_s alpha dvth dmu strain_engine_spice {_strain_engine_params(config)}
+        {engine}
         E_gshift g_eff g dvth 0 -1
         {device_instance}
         .ends strain_aware_device
@@ -178,6 +222,7 @@ def _strain_source_lines(profile: StrainProfileConfig) -> tuple[str, str]:
 
 def _transient_testbench(
     *,
+    simulator: SimulatorKind,
     include_files: list[str],
     instance_line: str,
     bias: str,
@@ -189,13 +234,15 @@ def _transient_testbench(
     wrapped: bool,
 ) -> str:
     """Build a transient simulation testbench with time-varying strain inputs."""
-    includes = "\n".join(f".include {name}" for name in include_files)
+    header = _netlist_header(simulator)
+    includes = "\n".join(_include_statement(simulator, name) for name in include_files)
     eps_source, alpha_source = _strain_source_lines(profile)
     print_vars = ["time", "v(eps_s)", "v(alpha)", "i(Vdd)"]
 
     if wrapped:
         return dedent(
             f"""
+            {header}
             * {title}
             {includes}
             {eps_source}
@@ -210,6 +257,7 @@ def _transient_testbench(
 
     return dedent(
         f"""
+        {header}
         * {title}
         {includes}
         {eps_source}
@@ -233,6 +281,7 @@ def _step_size(total: float, steps: int) -> float:
 
 def _dc_testbench(
     *,
+    simulator: SimulatorKind,
     include_files: list[str],
     instance_line: str,
     bias: str,
@@ -246,7 +295,8 @@ def _dc_testbench(
     title: str,
 ) -> str:
     """Build a generic DC sweep testbench."""
-    includes = "\n".join(f".include {name}" for name in include_files)
+    header = _netlist_header(simulator)
+    includes = "\n".join(_include_statement(simulator, name) for name in include_files)
     fixed = "\n".join(f"{name} {node} 0 dc {value}" for name, node, value in fixed_sources)
     sweep_decl = ""
     if sweep_node not in {node for _, node, _ in fixed_sources}:
@@ -256,6 +306,7 @@ def _dc_testbench(
 
     return dedent(
         f"""
+        {header}
         * {title}
         {includes}
 
@@ -275,6 +326,7 @@ def _dc_testbench(
 
 def _transfer_testbench(
     *,
+    simulator: SimulatorKind,
     include_files: list[str],
     instance_line: str,
     bias: str,
@@ -288,10 +340,12 @@ def _transfer_testbench(
     wrapped: bool,
 ) -> str:
     """Build a single Vgs transfer sweep testbench."""
-    includes = "\n".join(f".include {name}" for name in include_files)
+    header = _netlist_header(simulator)
+    includes = "\n".join(_include_statement(simulator, name) for name in include_files)
     if wrapped:
         return dedent(
             f"""
+            {header}
             * {title}
             {includes}
             Veps eps_s 0 dc {eps_s}
@@ -306,6 +360,7 @@ def _transfer_testbench(
 
     return dedent(
         f"""
+        {header}
         * {title}
         {includes}
         {bias}
@@ -326,13 +381,21 @@ def generate_netlists(
 ) -> GeneratedNetlists:
     """Generate baseline and strained testbench netlists."""
     output_dir.mkdir(parents=True, exist_ok=True)
+    simulator = config.normalized_simulator()
+    suffix = _netlist_extension(simulator)
 
     device_copy = output_dir / device_source_path.name
     device_copy.write_text(device.body + "\n", encoding="utf-8")
 
     wrapper_path = output_dir / "strain_wrap.inc"
-    wrapper_text = "\n\n".join([STRAIN_ENGINE_SPICE, device.body, _wrapper_subckt(device, config)])
-    wrapper_path.write_text(wrapper_text + "\n", encoding="utf-8")
+    wrapper_parts: list[str] = [device.body, _wrapper_subckt(device, config, simulator)]
+    if simulator == "ngspice":
+        wrapper_parts.insert(0, STRAIN_ENGINE_SPICE)
+    else:
+        va_source = _repo_root() / "va" / "strain_engine.va"
+        va_copy = output_dir / "strain_engine.va"
+        va_copy.write_text(va_source.read_text(encoding="utf-8"), encoding="utf-8")
+    wrapper_path.write_text("\n\n".join(wrapper_parts) + "\n", encoding="utf-8")
 
     bias = _common_bias(config.bias)
     mobility_port = config.device.mobility_control_port
@@ -342,13 +405,14 @@ def generate_netlists(
     direction = config.sweeps.strain_direction
     transfer = config.sweeps.transfer
 
-    baseline_magnitude = output_dir / "tb_baseline_magnitude.cir"
-    strained_magnitude = output_dir / "tb_strained_magnitude.cir"
-    baseline_direction = output_dir / "tb_baseline_direction.cir"
-    strained_direction = output_dir / "tb_strained_direction.cir"
+    baseline_magnitude = output_dir / f"tb_baseline_magnitude{suffix}"
+    strained_magnitude = output_dir / f"tb_strained_magnitude{suffix}"
+    baseline_direction = output_dir / f"tb_baseline_direction{suffix}"
+    strained_direction = output_dir / f"tb_strained_direction{suffix}"
 
     baseline_magnitude.write_text(
         _dc_testbench(
+            simulator=simulator,
             include_files=[device_copy.name],
             instance_line=_baseline_instance(device, config),
             bias=bias,
@@ -366,6 +430,7 @@ def generate_netlists(
 
     strained_magnitude.write_text(
         _dc_testbench(
+            simulator=simulator,
             include_files=["strain_wrap.inc"],
             instance_line=_strained_instance(config),
             bias=bias,
@@ -383,6 +448,7 @@ def generate_netlists(
 
     baseline_direction.write_text(
         _dc_testbench(
+            simulator=simulator,
             include_files=[device_copy.name],
             instance_line=_baseline_instance(device, config),
             bias=bias,
@@ -400,6 +466,7 @@ def generate_netlists(
 
     strained_direction.write_text(
         _dc_testbench(
+            simulator=simulator,
             include_files=["strain_wrap.inc"],
             instance_line=_strained_instance(config),
             bias=bias,
@@ -429,10 +496,11 @@ def generate_netlists(
     if transfer.enabled:
         vgs_step = _step_size(transfer.vgs_max - transfer.vgs_min, transfer.steps)
         for index, eps_s in enumerate(transfer.eps_s_cases):
-            baseline_path = output_dir / f"tb_baseline_transfer_{index}.cir"
-            strained_path = output_dir / f"tb_strained_transfer_{index}.cir"
+            baseline_path = output_dir / f"tb_baseline_transfer_{index}{suffix}"
+            strained_path = output_dir / f"tb_strained_transfer_{index}{suffix}"
             baseline_path.write_text(
                 _transfer_testbench(
+                    simulator=simulator,
                     include_files=[device_copy.name],
                     instance_line=_baseline_instance(device, config),
                     bias=transfer_bias,
@@ -449,6 +517,7 @@ def generate_netlists(
             )
             strained_path.write_text(
                 _transfer_testbench(
+                    simulator=simulator,
                     include_files=["strain_wrap.inc"],
                     instance_line=_strained_instance(config),
                     bias=transfer_bias,
@@ -469,10 +538,11 @@ def generate_netlists(
     baseline_transient_tb = None
     strained_transient_tb = None
     if config.transient.enabled:
-        baseline_transient_tb = output_dir / "tb_baseline_transient.cir"
-        strained_transient_tb = output_dir / "tb_strained_transient.cir"
+        baseline_transient_tb = output_dir / f"tb_baseline_transient{suffix}"
+        strained_transient_tb = output_dir / f"tb_strained_transient{suffix}"
         baseline_transient_tb.write_text(
             _transient_testbench(
+                simulator=simulator,
                 include_files=[device_copy.name],
                 instance_line=_baseline_instance(device, config),
                 bias=bias,
@@ -487,6 +557,7 @@ def generate_netlists(
         )
         strained_transient_tb.write_text(
             _transient_testbench(
+                simulator=simulator,
                 include_files=["strain_wrap.inc"],
                 instance_line=_strained_instance(config),
                 bias=bias,

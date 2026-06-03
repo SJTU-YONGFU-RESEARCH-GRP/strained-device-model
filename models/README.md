@@ -9,6 +9,7 @@ Reference MOS subcircuits for strain-wrapper evaluation with ngspice.
 | `bsim4_nmos.subckt` | NMOS | 54 | BSIM4 |
 | `bsim4_pmos.subckt` | PMOS | 54 | BSIM4 |
 | `bsim4l14_nmos.subckt` | NMOS | 14 | BSIM4 (alternate ngspice level-14 interface) |
+| `strain_demo_mos.subckt` | NMOS-like | — | Behavioral demo for ngspice + Spectre cross-validation |
 
 Each subcircuit exposes `d g s b` and accepts instance parameters `W` and `L`.
 

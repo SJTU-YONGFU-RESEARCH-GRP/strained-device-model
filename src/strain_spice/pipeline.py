@@ -16,7 +16,12 @@ from strain_spice.plots import (
     plot_transient_comparison,
 )
 from strain_spice.report import write_report
-from strain_spice.simulator import NgspiceRunner, SimulationResult, parse_print_table, save_csv
+from strain_spice.simulator import (
+    SimulationResult,
+    create_runner,
+    parse_print_table,
+    save_csv,
+)
 
 
 @dataclass(frozen=True)
@@ -42,7 +47,7 @@ def run_pipeline(
         config.device.subckt = device.name
 
     netlists = generate_netlists(device, device_path, config, output_dir)
-    runner = NgspiceRunner(binary=config.ngspice_binary)
+    runner = create_runner(config)
     workdir = netlists.output_dir
 
     def simulate(path: Path, name: str, analysis: str = "dc") -> SimulationResult:

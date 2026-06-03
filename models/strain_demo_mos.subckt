@@ -1,0 +1,6 @@
+* Behavioral NMOS-like device for cross-simulator (ngspice/Spectre) validation.
+*
+.subckt strain_demo_mos d g s b
+.param kp=2e-4 vth=0.35 lambda=0.02
+B1 d s I={kp*max(0, V(g)-V(s)-vth)*(1+lambda*max(0, V(d)-V(s)))}
+.ends strain_demo_mos

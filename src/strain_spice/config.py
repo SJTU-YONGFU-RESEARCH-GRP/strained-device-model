@@ -4,9 +4,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import yaml
+
+SimulatorKind = Literal["ngspice", "spectre"]
+VALID_SIMULATORS: tuple[SimulatorKind, ...] = ("ngspice", "spectre")
 
 
 @dataclass
@@ -133,8 +136,18 @@ class StrainSpiceConfig:
     transient: TransientConfig = field(default_factory=TransientConfig)
     bias: BiasConfig = field(default_factory=BiasConfig)
     sweeps: SweepConfig = field(default_factory=SweepConfig)
+    simulator: SimulatorKind = "ngspice"
     ngspice_binary: str = "ngspice"
+    spectre_binary: str = "spectre"
     title: str = "Strain SPICE comparison report"
+
+    def normalized_simulator(self) -> SimulatorKind:
+        """Return the configured simulator backend."""
+        if self.simulator not in VALID_SIMULATORS:
+            raise ValueError(
+                f"Unsupported simulator '{self.simulator}'; expected one of {VALID_SIMULATORS}"
+            )
+        return self.simulator
 
     @classmethod
     def from_yaml(cls, path: Path) -> StrainSpiceConfig:
@@ -176,6 +189,12 @@ class StrainSpiceConfig:
             transfer=TransferSweep(**sweeps_raw.get("transfer", {})),
         )
 
+        simulator = data.get("simulator", "ngspice")
+        if simulator not in VALID_SIMULATORS:
+            raise ValueError(
+                f"Unsupported simulator '{simulator}' in config; expected one of {VALID_SIMULATORS}"
+            )
+
         return cls(
             device=device,
             strain=strain,
@@ -183,6 +202,8 @@ class StrainSpiceConfig:
             transient=transient,
             bias=bias,
             sweeps=sweeps,
+            simulator=simulator,
             ngspice_binary=data.get("ngspice_binary", "ngspice"),
+            spectre_binary=data.get("spectre_binary", "spectre"),
             title=data.get("title", "Strain SPICE comparison report"),
         )
