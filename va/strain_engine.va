@@ -1,0 +1,48 @@
+// Generic strain-to-parameter engine (device-agnostic).
+//
+// Mechanical model (Liu et al., IEEE TNANO 2022, Eq. 6):
+//   eps_T = (eps_S / 2) * [1 - nu + (1 + nu) * cos(2 * alpha)]
+//
+// Electrical model (Eq. 5, linearized):
+//   Vth_eff = Vth0 - beta * eps_T
+//   mu_eff  = mu0  + gamma * eps_T
+//
+// Inputs (analog voltages encoding strain and angle):
+//   V(eps_s)  = applied strain epsilon_S  (e.g. 0.005 V <=> 0.5% strain)
+//   V(alpha)  = angle alpha [rad] between force direction and channel axis
+//
+// Outputs (control voltages consumed by the wrapper subckt):
+//   V(dvth) = Vth_eff - Vth0   [V]
+//   V(dmu)  = mu_eff  - mu0    [same units as mu0 in the wrapped device]
+
+`include "disciplines.vams"
+`include "constants.vams"
+
+module strain_engine(eps_s, alpha, dvth, dmu);
+
+  input eps_s, alpha;
+  output dvth, dmu;
+  electrical eps_s, alpha, dvth, dmu;
+
+  parameter real nu = 0.47 from (0.0:1.0);
+  parameter real beta = 1.0;
+  parameter real gamma = 0.0;
+  parameter real vth0 = 0.5;
+  parameter real mu0 = 0.01;
+
+  real eps_S, alpha_rad, eps_T, vth_eff, mu_eff;
+
+  analog begin
+    eps_S = V(eps_s);
+    alpha_rad = V(alpha);
+
+    eps_T = (eps_S / 2.0) * (1.0 - nu + (1.0 + nu) * cos(2.0 * alpha_rad));
+
+    vth_eff = vth0 - beta * eps_T;
+    mu_eff = mu0 + gamma * eps_T;
+
+    V(dvth) <+ vth_eff - vth0;
+    V(dmu) <+ mu_eff - mu0;
+  end
+
+endmodule

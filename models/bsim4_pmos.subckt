@@ -1,0 +1,15 @@
+* BSIM4 PMOS (ngspice level=54) for strain-wrapper evaluation.
+*
+.subckt bsim4_pmos d g s b
+.param W=10u L=180n
+
+.model bsim4_pmos_mod pmos level=54 version=4.4.0
++ vth0=-0.42 u0=150e-4 tox=2.0e-9
++ vfb=-1.0 phi=0.7 k1=0.55
++ wint=0 lint=0 xl=0 xw=0
++ dvt0=1.0 dvt1=2.0 dvt2=-0.032
++ nfactor=1.0 voff=-0.08 eta0=0.08 etab=-0.07
++ cgso=1.0e-10 cgdo=1.0e-10 cgbo=1.0e-10
+
+M1 d g s b bsim4_pmos_mod W={W} L={L}
+.ends bsim4_pmos

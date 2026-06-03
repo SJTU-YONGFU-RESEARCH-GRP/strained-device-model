@@ -1,0 +1,17 @@
+* BSIM3v3 NMOS (ngspice level=8) for strain-wrapper evaluation.
+*
+* Ports: d g s b
+* Instance params: W (default 10u), L (default 180n)
+*
+.subckt bsim3_nmos d g s b
+.param W=10u L=180n
+
+.model bsim3_nmos_mod nmos level=8 version=3.3.0
++ vth0=0.40 u0=400e-4 tox=4.0e-9 nsub=1.0e17
++ vfb0=-1.0 phi=0.7 k1=0.53 k2=0.02
++ voff=-0.08 nfactor=1.0 eta0=0.08 etab=-0.07
++ wint=0 lint=0 xl=0 xw=0
++ cgso=1.0e-10 cgdo=1.0e-10 cgbo=1.0e-10
+
+M1 d g s b bsim3_nmos_mod W={W} L={L}
+.ends bsim3_nmos
