@@ -8,6 +8,26 @@
 
 This repository provides a **device-agnostic strain-aware SPICE wrapper** and a Python workflow to wrap user `.subckt` models, run **ngspice** simulations, and generate pre/post strain comparison figures plus a markdown report. The strain engine supports the static Liu et al. channel map and optional **dynamic extensions** (mechanical bandwidth, strain-rate sensitivity, hysteresis, and transient strain profiles). Reference **BSIM3/BSIM4** MOS subcircuits and matching YAML configs are included for evaluation.
 
+## Problem statement
+
+Flexible and stretchable electronics—especially thin-film transistors (TFTs) in wearable biomedical front-ends—operate under mechanical loading from respiration, limb motion, and substrate bending. External tensile strain alters channel geometry and carrier transport, shifting threshold voltage and mobility in ways that depend on both strain magnitude and the angle of the applied force relative to the device. Conventional compact models such as BSIM3/BSIM4 do not expose mechanical strain as a simulation input, so circuit designers cannot systematically predict how strain distorts analog front-end performance (gain, offset, and signal integrity) before fabrication. Closing this gap requires a direction-aware mapping from mechanical loading to device parameters, and a practical way to attach that mapping to arbitrary SPICE subcircuits already in a design flow.
+
+## Motivation
+
+The Liu et al. (IEEE TNANO 2022) work demonstrated omni-directional TFTs and auto-calibrated front-end circuits that remain functional under tensile loading by aligning a force-insensitive axis with the strain direction—improving ECG/EMG acquisition SNR from strongly negative values to positive dB under simulated strain. To extend that physical insight beyond a single technology or hand-crafted netlist, this repository targets **pre-silicon exploration**: wrapping existing device models with a validated strain map, running automated DC and transient comparisons in ngspice, and producing reproducible figures and reports. Researchers and circuit designers working on flexible sensing, strain-resilient front-ends, or TFT-based systems can quantify strain-induced degradation and evaluate compensation strategies in simulation rather than relying solely on post-fabrication measurement.
+
+## Innovation
+
+This work contributes:
+
+1. **Device-agnostic strain wrapper** — A generated `strain_aware_device` subcircuit wraps any user `.subckt` (TFT, BSIM MOS, or custom compact model) without rewriting the underlying model equations. Strain enters through control voltages for applied strain ε_S and force angle α; the wrapper applies an effective gate shift and optional mobility control.
+
+2. **Omni-directional channel-strain map** — Implements the Liu et al. static mapping from (ε_S, α, ν) to channel strain ε_T and linearized ΔVth/Δμ shifts, enabling sweeps over strain magnitude and direction in a single workflow.
+
+3. **Dynamic strain extensions** — Four optional layers beyond the static reference model: transient strain profiles (Option 1), mechanical bandwidth / RC lag on ε_S (Option 2), strain-rate sensitivity (Option 3), and asymmetric load/unload hysteresis (Option 4)—available in both embedded SPICE (`strain_engine_spice`) and Verilog-A (`va/strain_engine.va`).
+
+4. **End-to-end open workflow** — YAML-driven configuration, automatic testbench generation, ngspice batch execution, SVG/CSV export, and markdown reporting (`strain-spice run`), with reference BSIM3/BSIM4 evaluations for reproducible benchmarking.
+
 - **Repository**: https://github.com/SJTU-YONGFU-RESEARCH-GRP/strained-device-model
 - **Python package**: `strain-spice` (`src/strain_spice/`)
 - **Entry point**: `strain-spice run`
@@ -16,6 +36,9 @@ This repository provides a **device-agnostic strain-aware SPICE wrapper** and a 
 
 ## Table of contents
 
+- [Problem statement](#problem-statement)
+- [Motivation](#motivation)
+- [Innovation](#innovation)
 - [Features](#features)
 - [Strain model](#strain-model)
   - [Static core](#static-core)
