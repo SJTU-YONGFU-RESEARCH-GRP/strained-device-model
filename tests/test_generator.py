@@ -48,5 +48,8 @@ def test_generate_spectre_wrapper_uses_verilog_a(project_root: Path, tmp_path: P
     assert "strain_engine_spice" not in wrapper_text
     assert (tmp_path / "strain_engine.va").exists()
     assert netlists.strained_magnitude_tb.suffix == ".scs"
-    assert "simulator lang=spice" in netlists.strained_magnitude_tb.read_text(encoding="utf-8")
+    tb_text = netlists.strained_magnitude_tb.read_text(encoding="utf-8")
+    assert "simulator lang=spice" in tb_text
+    assert '.include "strain_wrap.inc"' in tb_text
+    assert "bsource" in netlists.device_copy.read_text(encoding="utf-8")
 

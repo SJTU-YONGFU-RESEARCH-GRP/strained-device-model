@@ -72,8 +72,9 @@ class SpectreRunner:
     def run(self, netlist_path: Path, workdir: Path | None = None) -> str:
         """Run Spectre and return log text plus any ``.print`` artifact content."""
         cwd = workdir or netlist_path.parent
+        log_file = f"{netlist_path.stem}.log"
         completed = subprocess.run(
-            [self.binary, "+log", netlist_path.name],
+            [self.binary, "+log", log_file, netlist_path.name],
             cwd=cwd,
             check=False,
             capture_output=True,
@@ -114,6 +115,61 @@ def _find_spectre_print_file(workdir: Path, stem: str) -> Path | None:
     return None
 
 
+_SUFFIX_SCALE: dict[str, float] = {
+    "a": 1e-18,
+    "f": 1e-15,
+    "p": 1e-12,
+    "n": 1e-9,
+    "u": 1e-6,
+    "m": 1e-3,
+    "k": 1e3,
+    "meg": 1e6,
+    "g": 1e9,
+    "t": 1e12,
+}
+
+
+def _parse_number_token(token: str) -> float:
+    """Parse a plain or unit-suffixed Spectre print value."""
+    cleaned = token.strip()
+    if not cleaned:
+        raise ValueError("empty token")
+    try:
+        return float(cleaned)
+    except ValueError:
+        pass
+
+    suffix = cleaned[-1].lower()
+    if suffix in _SUFFIX_SCALE:
+        return float(cleaned[:-1]) * _SUFFIX_SCALE[suffix]
+
+    for suffix_name, scale in sorted(_SUFFIX_SCALE.items(), key=len, reverse=True):
+        if cleaned.lower().endswith(suffix_name):
+            return float(cleaned[: -len(suffix_name)]) * scale
+
+    raise ValueError(f"cannot parse numeric token '{token}'")
+
+
+def _parse_data_row(parts: list[str], column_count: int) -> list[float] | None:
+    """Parse one Spectre or ngspice data row, including split unit suffixes."""
+    values: list[float] = []
+    index = 0
+    while len(values) < column_count and index < len(parts):
+        token = parts[index]
+        if index + 1 < len(parts) and parts[index + 1].lower() in _SUFFIX_SCALE:
+            values.append(_parse_number_token(token + parts[index + 1]))
+            index += 2
+            continue
+        try:
+            values.append(_parse_number_token(token))
+        except ValueError:
+            return None
+        index += 1
+    if len(values) != column_count:
+        return None
+    return values
+
+
 def parse_print_table(output: str, name: str, analysis: str = "dc") -> SimulationResult:
     """Parse simulator tabular output (ngspice log or Spectre ``.print`` file)."""
     lines = output.splitlines()
@@ -148,6 +204,8 @@ def parse_print_table(output: str, name: str, analysis: str = "dc") -> Simulatio
             continue
         if stripped.startswith("Total ") or stripped.startswith("Doing analysis"):
             break
+        if stripped in {"x", "y"} or stripped.startswith("*"):
+            continue
         if set(stripped) <= {"-", " "}:
             continue
         parts = stripped.split()
@@ -158,17 +216,14 @@ def parse_print_table(output: str, name: str, analysis: str = "dc") -> Simulatio
                 if rows:
                     break
                 continue
-            values = parts[1 : 1 + len(column_names)]
+            row_values = _parse_data_row(parts[1:], len(column_names))
         else:
-            try:
-                values = [float(part) for part in parts[: len(column_names)]]
-            except ValueError:
-                if rows:
-                    break
-                continue
-        if len(values) != len(column_names):
+            row_values = _parse_data_row(parts, len(column_names))
+        if row_values is None:
+            if rows:
+                break
             continue
-        rows.append([float(value) for value in values])
+        rows.append(row_values)
 
     if not rows:
         raise ValueError(f"Empty simulation table for '{name}'.")
@@ -185,8 +240,18 @@ def _looks_like_table_header(line: str) -> bool:
         return False
     if tokens[0].lower() == "index":
         return True
-    allowed_prefixes = ("v(", "i(", "time", "freq")
-    return any(token.lower().startswith(allowed_prefixes) for token in tokens)
+    if "=" in line:
+        return False
+    signal_columns = [
+        token
+        for token in tokens
+        if token.lower().startswith(("v(", "i(", "time(", "freq("))
+    ]
+    if len(signal_columns) < 2:
+        return False
+    if tokens[0].lower() in {"dc", "time", "freq"}:
+        return True
+    return True
 
 
 def save_csv(result: SimulationResult, path: Path) -> None:

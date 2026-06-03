@@ -32,3 +32,19 @@ v(eps_s) v(alpha) i("Vdd:p")
     result = parse_print_table(output, name="demo", analysis="dc")
     assert result.row_count == 2
     assert 'i("Vdd:p")' in result.columns
+
+
+def test_parse_spectre_print_file_with_units() -> None:
+    """Parse Spectre .print tables that use SI unit suffixes."""
+    output = """
+x
+             dc       v(eps_s)       v(alpha)         i(Vdd)
+              0              0              0        -40.8 u
+          625 u          625 u              0        -40.8 u
+            5 m            5 m              0        -40.8 u
+y
+"""
+    result = parse_print_table(output, name="demo", analysis="dc")
+    assert result.row_count == 3
+    assert result.columns["v(eps_s)"][2] == pytest.approx(0.005)
+    assert result.columns["i(Vdd)"][0] == pytest.approx(-40.8e-6)

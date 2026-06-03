@@ -36,8 +36,26 @@ def _netlist_header(simulator: SimulatorKind) -> str:
 def _include_statement(simulator: SimulatorKind, filename: str) -> str:
     """Return an include line compatible with the target simulator."""
     if simulator == "spectre":
-        return f'include "{filename}"'
+        return f'.include "{filename}"'
     return f".include {filename}"
+
+
+SPECTRE_STRAIN_DEMO_MOS = dedent(
+    """
+    simulator lang=spectre
+    subckt strain_demo_mos d g s b
+      parameters kp=2e-4 vth=0.35 lambda=0.02
+      Id1 (d s) bsource i = kp*max(0, v(g)-v(s)-vth)*(1+lambda*max(0, v(d)-v(s)))
+    ends strain_demo_mos
+    """
+).strip()
+
+
+def _device_netlist_body(device: SubcktDefinition, simulator: SimulatorKind) -> str:
+    """Return the device subcircuit text for the selected simulator."""
+    if simulator == "spectre" and device.name == "strain_demo_mos":
+        return SPECTRE_STRAIN_DEMO_MOS
+    return device.body
 
 
 STRAIN_ENGINE_SPICE = dedent(
@@ -113,8 +131,37 @@ def _strain_engine_instance(config: StrainSpiceConfig, simulator: SimulatorKind)
     """Return the strain-engine instance line for the selected simulator."""
     params = _strain_engine_params(config)
     if simulator == "spectre":
-        return f"Xse eps_s alpha dvth dmu strain_engine {params}"
+        return f"Xse (eps_s alpha dvth dmu) strain_engine {params}"
     return f"Xse eps_s alpha dvth dmu strain_engine_spice {params}"
+
+
+def _gate_shift_line(simulator: SimulatorKind) -> str:
+    """Return the gate voltage-shift element for the wrapper subcircuit."""
+    if simulator == "spectre":
+        return "E_gshift (g_eff g) vsource v = -v(dvth)"
+    return "E_gshift g_eff g dvth 0 -1"
+
+
+def _device_instance_line(
+    device: SubcktDefinition,
+    config: StrainSpiceConfig,
+    simulator: SimulatorKind,
+    *,
+    gate_node: str = "g_eff",
+) -> str:
+    """Return the wrapped user-device instance line."""
+    device_cfg = config.device
+    mobility_port = device_cfg.mobility_control_port
+    ports = [device_cfg.drain_port, gate_node, device_cfg.source_port]
+    if device_cfg.bulk_port:
+        ports.append(device_cfg.bulk_port)
+    if mobility_port is not None:
+        ports.append(mobility_port)
+    joined_ports = " ".join(ports)
+    params = _format_instance_params(device_cfg.instance_params)
+    if simulator == "spectre":
+        return f"Xdev ({joined_ports}) {device.name}{params}"
+    return f"Xdev {joined_ports} {device.name}{params}"
 
 
 def _wrapper_subckt(
@@ -123,29 +170,36 @@ def _wrapper_subckt(
     simulator: SimulatorKind,
 ) -> str:
     """Build the strain-aware wrapper subcircuit."""
-    device_cfg = config.device
     strain = config.strain
-    mobility_port = device_cfg.mobility_control_port
-
-    device_instance = (
-        f"Xdev {device_cfg.drain_port} g_eff {device_cfg.source_port}"
-        f"{f' {device_cfg.bulk_port}' if device_cfg.bulk_port else ''}"
-    )
-    if mobility_port is not None:
-        device_instance += " dmu"
-
-    device_instance += f" {device.name}{_format_instance_params(device_cfg.instance_params)}"
     engine = _strain_engine_instance(config, simulator)
-    ahdl = 'ahdl_include "strain_engine.va"\n' if simulator == "spectre" else ""
+    gate_shift = _gate_shift_line(simulator)
+    device_instance = _device_instance_line(device, config, simulator)
+    tau_load, tau_unload = _hysteresis_taus(config.dynamic)
+
+    if simulator == "spectre":
+        return dedent(
+            f"""
+            simulator lang=spectre
+            ahdl_include "strain_engine.va"
+            subckt strain_aware_device d g s b eps_s alpha
+              parameters nu={strain.nu} beta={strain.beta} gamma={strain.gamma} vth0={strain.vth0} mu0={strain.mu0}
+              parameters beta_r={config.dynamic.beta_r} gamma_r={config.dynamic.gamma_r} tau_m={_mechanical_tau(config.dynamic)}
+              parameters tau_load={tau_load} tau_unload={tau_unload}
+              {engine}
+              {gate_shift}
+              {device_instance}
+            ends strain_aware_device
+            """
+        ).strip()
 
     return dedent(
         f"""
-        {ahdl}.subckt strain_aware_device d g s b eps_s alpha
+        .subckt strain_aware_device d g s b eps_s alpha
         .param nu={strain.nu} beta={strain.beta} gamma={strain.gamma} vth0={strain.vth0} mu0={strain.mu0}
         .param beta_r={config.dynamic.beta_r} gamma_r={config.dynamic.gamma_r} tau_m={_mechanical_tau(config.dynamic)}
-        .param tau_load={_hysteresis_taus(config.dynamic)[0]} tau_unload={_hysteresis_taus(config.dynamic)[1]}
+        .param tau_load={tau_load} tau_unload={tau_unload}
         {engine}
-        E_gshift g_eff g dvth 0 -1
+        {gate_shift}
         {device_instance}
         .ends strain_aware_device
         """
@@ -239,37 +293,21 @@ def _transient_testbench(
     eps_source, alpha_source = _strain_source_lines(profile)
     print_vars = ["time", "v(eps_s)", "v(alpha)", "i(Vdd)"]
 
-    if wrapped:
-        return dedent(
-            f"""
-            {header}
-            * {title}
-            {includes}
-            {eps_source}
-            {alpha_source}
-            {bias}
-            {instance_line}
-            .tran {tstep} {tstop}
-            .print tran {' '.join(print_vars)}
-            .end
-            """
-        ).strip() + "\n"
-
-    return dedent(
-        f"""
-        {header}
-        * {title}
-        {includes}
-        {eps_source}
-        {alpha_source}
-        {bias}
-        {mobility_bias}
-        {instance_line}
-        .tran {tstep} {tstop}
-        .print tran {' '.join(print_vars)}
-        .end
-        """
-    ).strip() + "\n"
+    sections = [
+        header,
+        f"* {title}",
+        includes,
+        eps_source,
+        alpha_source,
+        bias,
+        instance_line,
+        f".tran {tstep} {tstop}",
+        f".print tran {' '.join(print_vars)}",
+        ".end",
+    ]
+    if not wrapped:
+        sections.insert(6, mobility_bias)
+    return "\n".join(section for section in sections if section) + "\n"
 
 
 def _step_size(total: float, steps: int) -> float:
@@ -303,25 +341,20 @@ def _dc_testbench(
         sweep_decl = f"{sweep_source} {sweep_node} 0 dc {sweep_start}"
 
     print_vars = ["v(eps_s)", "v(alpha)", "i(Vdd)"]
-
-    return dedent(
-        f"""
-        {header}
-        * {title}
-        {includes}
-
-        {sweep_decl}
-        {fixed}
-        {bias}
-        {mobility_bias}
-
-        {instance_line}
-
-        .dc {sweep_source} {sweep_start} {sweep_stop} {sweep_step}
-        .print dc {' '.join(print_vars)}
-        .end
-        """
-    ).strip() + "\n"
+    sections = [
+        header,
+        f"* {title}",
+        includes,
+        sweep_decl,
+        fixed,
+        bias,
+        mobility_bias,
+        instance_line,
+        f".dc {sweep_source} {sweep_start} {sweep_stop} {sweep_step}",
+        f".print dc {' '.join(print_vars)}",
+        ".end",
+    ]
+    return "\n".join(section for section in sections if section) + "\n"
 
 
 def _transfer_testbench(
@@ -343,34 +376,32 @@ def _transfer_testbench(
     header = _netlist_header(simulator)
     includes = "\n".join(_include_statement(simulator, name) for name in include_files)
     if wrapped:
-        return dedent(
-            f"""
-            {header}
-            * {title}
-            {includes}
-            Veps eps_s 0 dc {eps_s}
-            Valp alpha 0 dc {alpha}
-            {bias}
-            {instance_line}
-            .dc Vgs {vgs_min} {vgs_max} {vgs_step}
-            .print dc v(eps_s) v(g) i(Vdd)
-            .end
-            """
-        ).strip() + "\n"
+        sections = [
+            header,
+            f"* {title}",
+            includes,
+            f"Veps eps_s 0 dc {eps_s}",
+            f"Valp alpha 0 dc {alpha}",
+            bias,
+            instance_line,
+            f".dc Vgs {vgs_min} {vgs_max} {vgs_step}",
+            ".print dc v(eps_s) v(g) i(Vdd)",
+            ".end",
+        ]
+        return "\n".join(section for section in sections if section) + "\n"
 
-    return dedent(
-        f"""
-        {header}
-        * {title}
-        {includes}
-        {bias}
-        {mobility_bias}
-        {instance_line}
-        .dc Vgs {vgs_min} {vgs_max} {vgs_step}
-        .print dc v(g) i(Vdd)
-        .end
-        """
-    ).strip() + "\n"
+    sections = [
+        header,
+        f"* {title}",
+        includes,
+        bias,
+        mobility_bias,
+        instance_line,
+        f".dc Vgs {vgs_min} {vgs_max} {vgs_step}",
+        ".print dc v(g) i(Vdd)",
+        ".end",
+    ]
+    return "\n".join(section for section in sections if section) + "\n"
 
 
 def generate_netlists(
@@ -384,11 +415,12 @@ def generate_netlists(
     simulator = config.normalized_simulator()
     suffix = _netlist_extension(simulator)
 
+    device_body = _device_netlist_body(device, simulator)
     device_copy = output_dir / device_source_path.name
-    device_copy.write_text(device.body + "\n", encoding="utf-8")
+    device_copy.write_text(device_body + "\n", encoding="utf-8")
 
     wrapper_path = output_dir / "strain_wrap.inc"
-    wrapper_parts: list[str] = [device.body, _wrapper_subckt(device, config, simulator)]
+    wrapper_parts: list[str] = [device_body, _wrapper_subckt(device, config, simulator)]
     if simulator == "ngspice":
         wrapper_parts.insert(0, STRAIN_ENGINE_SPICE)
     else:

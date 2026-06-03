@@ -1,0 +1,11 @@
+simulator lang=spice
+* baseline transfer eps_s=0.005
+.include "strain_demo_mos.subckt"
+Vdd d 0 dc 1.0
+Vgs g 0 dc 0
+Vss s 0 dc 0.0
+Vbb b 0 dc 0.0
+Xdev d g s b strain_demo_mos kp=2e-4 vth=0.35
+.dc Vgs 0.0 1.0 0.05
+.print dc v(g) i(Vdd)
+.end

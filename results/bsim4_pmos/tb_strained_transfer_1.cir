@@ -1,12 +1,12 @@
 * strained transfer eps_s=0.0025
-            .include strain_wrap.inc
-            Veps eps_s 0 dc 0.0025
-            Valp alpha 0 dc 0.0
-            Vdd d 0 dc -1.0
+.include strain_wrap.inc
+Veps eps_s 0 dc 0.0025
+Valp alpha 0 dc 0.0
+Vdd d 0 dc -1.0
 Vgs g 0 dc 0
 Vss s 0 dc 0.0
 Vbb b 0 dc 0.0
-            Xwrap d g s b eps_s alpha strain_aware_device nu=0.47 beta=0.8 gamma=0.0 vth0=0.42 mu0=0.015 nu=0.47 beta=0.8 gamma=0.0 beta_r=0.0 gamma_r=0.0 tau_m=1e-15 tau_load=1e-12 tau_unload=1e-12
-            .dc Vgs -1.2 0.0 0.049999999999999996
-            .print dc v(eps_s) v(g) i(Vdd)
-            .end
+Xwrap d g s b eps_s alpha strain_aware_device nu=0.47 beta=0.8 gamma=0.0 vth0=0.42 mu0=0.015 nu=0.47 beta=0.8 gamma=0.0 beta_r=0.0 gamma_r=0.0 tau_m=1e-15 tau_load=1e-12 tau_unload=1e-12
+.dc Vgs -1.2 0.0 0.049999999999999996
+.print dc v(eps_s) v(g) i(Vdd)
+.end

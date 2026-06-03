@@ -11,7 +11,7 @@ Dynamic configs (`transient.enabled: true`) add transient testbenches and figure
 - `figures/transient_controls.svg` — ΔVth and Δμ versus time
 - `strain_comparison_report.md` — transient summary metrics, phase lag, and a time-series sample
 
-Index last updated: 2026-06-03 14:10 UTC
+Index last updated: 2026-06-03 15:48 UTC
 
 ## Evaluations
 
@@ -28,3 +28,5 @@ Index last updated: 2026-06-03 14:10 UTC
   - DC sweeps: [magnitude](bsim4_pmos/figures/magnitude_comparison.svg), [direction](bsim4_pmos/figures/direction_comparison.svg)
 - **[bsim4l14_nmos](bsim4l14_nmos/strain_comparison_report.md)**
   - DC sweeps: [magnitude](bsim4l14_nmos/figures/magnitude_comparison.svg), [direction](bsim4l14_nmos/figures/direction_comparison.svg)
+- **[strain_demo_spectre](strain_demo_spectre/strain_comparison_report.md)**
+  - DC sweeps: [magnitude](strain_demo_spectre/figures/magnitude_comparison.svg), [direction](strain_demo_spectre/figures/direction_comparison.svg)
