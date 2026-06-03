@@ -1,0 +1,281 @@
+# strained-device-model
+
+[![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-green?logo=creativecommons&logoColor=white)](https://creativecommons.org/licenses/by/4.0/)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-3776ab.svg)](https://www.python.org/downloads/)
+[![GitHub](https://img.shields.io/badge/GitHub-SJTU--YONGFU--RESEARCH--GRP%2Fstrained--device--model-181717?logo=github)](https://github.com/SJTU-YONGFU-RESEARCH-GRP/strained-device-model)
+
+**Repository:** [SJTU-YONGFU-RESEARCH-GRP/strained-device-model](https://github.com/SJTU-YONGFU-RESEARCH-GRP/strained-device-model)
+
+This repository provides a **device-agnostic strain-aware SPICE wrapper** and a Python workflow to wrap user `.subckt` models, run **ngspice** simulations, and generate pre/post strain comparison figures plus a markdown report. Reference **BSIM3/BSIM4** MOS subcircuits and matching YAML configs are included for evaluation.
+
+- **Repository**: https://github.com/SJTU-YONGFU-RESEARCH-GRP/strained-device-model
+- **Python package**: `strain-spice` (`src/strain_spice/`)
+- **Entry point**: `strain-spice run`
+- **Evaluation models**: `models/` with configs in `configs/`
+- **License**: CC BY 4.0 (see [LICENSE](LICENSE))
+
+## Table of contents
+
+- [Features](#features)
+- [Strain model](#strain-model)
+- [Requirements](#requirements)
+- [Quick start](#quick-start)
+  - [Installation](#installation)
+  - [Run a BSIM evaluation](#run-a-bsim-evaluation)
+  - [Wrap a custom device](#wrap-a-custom-device)
+- [Evaluation models](#evaluation-models)
+- [Outputs](#outputs)
+- [Configuration](#configuration)
+- [Python API](#python-api)
+- [Project layout](#project-layout)
+- [Development](#development)
+- [License](#license)
+- [References](#references)
+- [Citation](#citation)
+
+## Features
+
+- Wrap any user SPICE subcircuit with a generated **strain-aware wrapper** (`strain_wrap.inc`).
+- Map external mechanical loading to channel strain, then to threshold and mobility shifts.
+- Run baseline (unwrapped) and strained **DC sweeps** with ngspice.
+- Export **SVG figures**, **CSV tables**, and a **markdown comparison report**.
+- Ship reference **BSIM3v3** and **BSIM4** NMOS/PMOS evaluation netlists for ngspice.
+- Optional **Verilog-A** strain engine (`va/strain_engine.va`) for Spectre-style flows.
+
+## Strain model
+
+The wrapper implements the mechanical and electrical mapping from Liu et al. (IEEE TNANO 2022):
+
+**Channel strain** from applied strain `ε_S` and force angle `α` (rad):
+
+```
+ε_T = (ε_S / 2) · [1 − ν + (1 + ν) cos(2α)]
+```
+
+**Parameter shifts** (linearized):
+
+```
+Vth_eff = Vth0 − β · ε_T
+μ_eff   = μ0  + γ · ε_T
+```
+
+The generated SPICE wrapper applies threshold shift through an effective gate-voltage source (`E_gshift`). When `mobility_control_port` is set in the YAML config, mobility modulation is routed to a device control port; BSIM evaluation configs use **threshold-shift-only** coupling.
+
+Implementation details live in `src/strain_spice/strain_math.py` and `src/strain_spice/generator.py`.
+
+## Requirements
+
+- **Python** 3.10+
+- **ngspice** on `PATH` (batch mode, `-b`)
+- Python dependencies (installed with the package):
+  - `matplotlib`
+  - `numpy`
+  - `pyyaml`
+
+Optional:
+
+- **OpenVAF** — compile `va/strain_engine.va` to OSDI if you extend the flow for Verilog-A in ngspice
+- **Cadence Spectre** — use `va/strain_engine.va` with an AHDL include in your own netlist flow
+
+## Quick start
+
+### Installation
+
+```bash
+git clone https://github.com/SJTU-YONGFU-RESEARCH-GRP/strained-device-model.git
+cd strained-device-model
+
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"
+```
+
+Verify ngspice is available:
+
+```bash
+ngspice -v
+```
+
+### Run a BSIM evaluation
+
+```bash
+strain-spice run \
+  --device models/bsim4_nmos.subckt \
+  --config configs/bsim4_nmos.yaml \
+  --output results/bsim4_nmos
+```
+
+Other bundled configs:
+
+```bash
+strain-spice run --device models/bsim3_nmos.subckt --config configs/bsim3_nmos.yaml --output results/bsim3_nmos
+strain-spice run --device models/bsim3_pmos.subckt --config configs/bsim3_pmos.yaml --output results/bsim3_pmos
+strain-spice run --device models/bsim4_pmos.subckt --config configs/bsim4_pmos.yaml --output results/bsim4_pmos
+strain-spice run --device models/bsim4l14_nmos.subckt --config configs/bsim4l14_nmos.yaml --output results/bsim4l14_nmos
+```
+
+### Wrap a custom device
+
+1. Provide a `.subckt` netlist with at least `d`, `g`, and `s` ports.
+2. Copy a config from `configs/` and set `device.subckt`, port names, bias, and strain coefficients.
+3. Run:
+
+```bash
+strain-spice run \
+  --device path/to/your_device.subckt \
+  --config path/to/your_config.yaml \
+  --output results/your_device
+```
+
+For BSIM-style models, set `mobility_control_port: null` (threshold shift only). To also modulate mobility, add a control port (for example `dmu_ctrl`) to your subcircuit and reference it in the config.
+
+## Evaluation models
+
+Reference MOS subcircuits under `models/`:
+
+| Model file | Type | ngspice level | Matching config |
+|------------|------|---------------|-----------------|
+| `models/bsim3_nmos.subckt` | NMOS | 8 (BSIM3v3) | `configs/bsim3_nmos.yaml` |
+| `models/bsim3_pmos.subckt` | PMOS | 8 (BSIM3v3) | `configs/bsim3_pmos.yaml` |
+| `models/bsim4_nmos.subckt` | NMOS | 54 (BSIM4) | `configs/bsim4_nmos.yaml` |
+| `models/bsim4_pmos.subckt` | PMOS | 54 (BSIM4) | `configs/bsim4_pmos.yaml` |
+| `models/bsim4l14_nmos.subckt` | NMOS | 14 (BSIM4 alt.) | `configs/bsim4l14_nmos.yaml` |
+
+Each subcircuit exposes `d g s b` and accepts instance parameters `W` and `L`. Model cards use generic 180 nm-class parameters for **relative strain comparison**, not foundry sign-off. See [models/README.md](models/README.md) for notes on PMOS biasing and parameter replacement.
+
+## Outputs
+
+Each run writes to the directory passed to `--output`:
+
+| Artifact | Description |
+|----------|-------------|
+| `strain_wrap.inc` | Generated strain engine + wrapper + embedded device |
+| `tb_baseline_*.cir`, `tb_strained_*.cir` | ngspice testbenches |
+| `*.csv` | Parsed DC sweep tables |
+| `figures/*.svg` | Pre/post comparison plots |
+| `strain_comparison_report.md` | Summary report with metrics and embedded figures |
+
+## Configuration
+
+YAML configs control device port mapping, strain coefficients, bias, and sweeps. Minimal schema:
+
+```yaml
+device:
+  subckt: bsim4_nmos
+  drain_port: d
+  gate_port: g
+  source_port: s
+  bulk_port: b
+  mobility_control_port: null
+  instance_params:
+    W: 10u
+    L: 180n
+
+strain:
+  nu: 0.47      # Poisson's ratio
+  beta: 0.8     # threshold sensitivity
+  gamma: 0.0    # mobility sensitivity
+  vth0: 0.40
+  mu0: 0.04
+
+bias:
+  vdd: 1.0
+  vgs: 0.75
+  vss: 0.0
+
+sweeps:
+  strain_magnitude:
+    eps_s_max: 0.005
+    steps: 11
+    alpha: 0.0
+  strain_direction:
+    eps_s: 0.005
+    alpha_max: 1.5707963267948966
+    steps: 17
+  transfer:
+    enabled: true
+    vgs_min: 0.0
+    vgs_max: 1.2
+    steps: 25
+    eps_s_cases: [0.0, 0.0025, 0.005]
+    alpha: 0.0
+```
+
+Strain inputs are encoded as control voltages in simulation (`0.005` V corresponds to `0.5%` strain).
+
+## Python API
+
+```python
+from pathlib import Path
+
+from strain_spice import StrainSpiceConfig, run_pipeline
+
+config = StrainSpiceConfig.from_yaml(Path("configs/bsim4_nmos.yaml"))
+result = run_pipeline(
+    device_path=Path("models/bsim4_nmos.subckt"),
+    config=config,
+    output_dir=Path("results/bsim4_nmos"),
+)
+
+print(result.report_path)
+print(result.figure_paths)
+```
+
+## Project layout
+
+```text
+strained-device-model/
+├── configs/                 # YAML configs for bundled BSIM evaluations
+├── models/                  # Reference BSIM .subckt netlists
+├── src/strain_spice/        # Python package (generator, simulator, report)
+├── tests/                   # pytest suite
+├── va/                      # Verilog-A strain engine (optional Spectre/OSDI path)
+├── pyproject.toml
+├── LICENSE
+└── README.md
+```
+
+## Development
+
+```bash
+pytest
+ruff check src tests
+```
+
+## License
+
+This project is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). See [LICENSE](LICENSE).
+
+Bundled BSIM model cards are generic reference parameters. Replace them with your PDK or foundry terms when used outside research comparison workflows.
+
+## References
+
+- Y. Liu et al., “Tensile-Force-Resilient Biomedical Front-End Circuits Employing Auto-Calibrated Omni-Directional Thin-Film Transistors,” *IEEE Trans. Nanotechnol.*, vol. 21, pp. 575–585, 2022. [DOI: 10.1109/TNANO.2022.3208555](https://doi.org/10.1109/TNANO.2022.3208555)
+- [ngspice](https://ngspice.sourceforge.io/) circuit simulator
+- [models/README.md](models/README.md) — evaluation device notes
+
+## Citation
+
+If you use this software in academic work, please cite the repository and the strain-model reference above:
+
+```bibtex
+@software{strained_device_model,
+  title        = {strained-device-model: Strain-aware SPICE wrapper and simulation workflow},
+  author       = {{SJTU Yongfu Research Group}},
+  year         = {2026},
+  url          = {https://github.com/SJTU-YONGFU-RESEARCH-GRP/strained-device-model},
+  license      = {CC-BY-4.0}
+}
+```
+
+```bibtex
+@article{Liu2022TensileForceResilient,
+  author  = {Liu, Yaxin and Ma, Zhouchen and Liu, Hongyi and Lin, Waner and Wei, Jing and Chen, Sujie and Lin, Chen and Li, Yongfu and Zhao, Jian},
+  title   = {Tensile-Force-Resilient Biomedical Front-End Circuits Employing Auto-Calibrated Omni-Directional Thin-Film Transistors},
+  journal = {IEEE Transactions on Nanotechnology},
+  volume  = {21},
+  pages   = {575--585},
+  year    = {2022},
+  doi     = {10.1109/TNANO.2022.3208555}
+}
+```

@@ -1,0 +1,11 @@
+* baseline transfer eps_s=0.0025
+        .include bsim4_nmos.subckt
+        Vdd d 0 dc 1.0
+Vgs g 0 dc 0
+Vss s 0 dc 0.0
+Vbb b 0 dc 0.0
+
+        Xdev d g s b bsim4_nmos W=10u L=180n
+        .dc Vgs 0.0 1.2 0.049999999999999996
+        .print dc v(g) i(Vdd)
+        .end

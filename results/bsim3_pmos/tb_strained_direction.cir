@@ -1,0 +1,16 @@
+* strained direction
+        .include strain_wrap.inc
+
+        Valp alpha 0 dc 0.0
+        Veps eps_s 0 dc 0.005
+        Vdd d 0 dc -1.0
+Vgs g 0 dc -0.75
+Vss s 0 dc 0.0
+Vbb b 0 dc 0.0
+
+
+        Xwrap d g s b eps_s alpha strain_aware_device nu=0.47 beta=0.8 gamma=0.0 vth0=0.42 mu0=0.015
+
+        .dc Valp 0.0 1.5707963267948966 0.09817477042468103
+        .print dc v(eps_s) v(alpha) i(Vdd)
+        .end
