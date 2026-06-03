@@ -22,6 +22,36 @@ class ComparisonMetrics:
     relative_change_pct: float
 
 
+@dataclass(frozen=True)
+class TransientMetrics:
+    """Time-domain drain-current metrics for a transient strain profile."""
+
+    peak_baseline: float
+    peak_strained: float
+    peak_relative_change_pct: float
+    rms_baseline: float
+    rms_strained: float
+    rms_relative_change_pct: float
+    ptp_baseline: float
+    ptp_strained: float
+    ptp_relative_change_pct: float
+    phase_lag_s: float
+
+
+def _format_metric_value(value: float) -> str:
+    """Format a numeric metric for markdown tables."""
+    if not np.isfinite(value):
+        return "—"
+    return f"{value:.6g}"
+
+
+def _format_relative_change(value: float) -> str:
+    """Format a relative percent change for markdown tables."""
+    if not np.isfinite(value):
+        return "—"
+    return f"{value:.3f}"
+
+
 def _sanitize_table_cell(value: str) -> str:
     """Escape characters that would break markdown table rendering."""
     return value.replace("|", "&#124;")
@@ -36,6 +66,64 @@ def _format_table(headers: list[str], rows: list[list[str]]) -> str:
         "| " + " | ".join(_sanitize_table_cell(cell) for cell in row) + " |" for row in rows
     )
     return "\n".join([header_line, separator, body])
+
+
+def _relative_change_pct(baseline: float, strained: float) -> float:
+    """Compute percent change from baseline to strained."""
+    if baseline == 0.0:
+        return float("inf") if strained != 0.0 else 0.0
+    return (strained - baseline) / baseline * 100.0
+
+
+def _phase_lag_seconds(time_s: np.ndarray, reference: np.ndarray, response: np.ndarray) -> float:
+    """Estimate lag of ``response`` behind ``reference`` via cross-correlation."""
+    if len(time_s) < 2:
+        return 0.0
+
+    ref = reference - float(np.mean(reference))
+    resp = response - float(np.mean(response))
+    ref_std = float(np.std(ref))
+    resp_std = float(np.std(resp))
+    if ref_std < 1e-15 or resp_std < 1e-15:
+        return 0.0
+
+    ref_norm = ref / ref_std
+    resp_norm = resp / resp_std
+    correlation = np.correlate(resp_norm, ref_norm, mode="full")
+    lag_index = int(np.argmax(correlation)) - (len(ref_norm) - 1)
+    dt = float(np.median(np.diff(time_s)))
+    return lag_index * dt
+
+
+def _transient_metrics(
+    baseline: SimulationResult,
+    strained: SimulationResult,
+) -> TransientMetrics:
+    """Compute peak, RMS, peak-to-peak, and phase-lag metrics for transient runs."""
+    time_s = find_column(strained, ("time",))
+    eps_s = find_column(strained, ("v(eps_s)",))
+    id_base = np.abs(find_column(baseline, ("i(vdd)",)))
+    id_strained = np.abs(find_column(strained, ("i(vdd)",)))
+
+    peak_base = float(np.max(id_base))
+    peak_strained = float(np.max(id_strained))
+    rms_base = float(np.sqrt(np.mean(id_base**2)))
+    rms_strained = float(np.sqrt(np.mean(id_strained**2)))
+    ptp_base = float(np.max(id_base) - np.min(id_base))
+    ptp_strained = float(np.max(id_strained) - np.min(id_strained))
+
+    return TransientMetrics(
+        peak_baseline=peak_base,
+        peak_strained=peak_strained,
+        peak_relative_change_pct=_relative_change_pct(peak_base, peak_strained),
+        rms_baseline=rms_base,
+        rms_strained=rms_strained,
+        rms_relative_change_pct=_relative_change_pct(rms_base, rms_strained),
+        ptp_baseline=ptp_base,
+        ptp_strained=ptp_strained,
+        ptp_relative_change_pct=_relative_change_pct(ptp_base, ptp_strained),
+        phase_lag_s=_phase_lag_seconds(time_s, eps_s, id_strained),
+    )
 
 
 def _peak_relative_change(baseline: SimulationResult, strained: SimulationResult) -> ComparisonMetrics:
@@ -170,9 +258,51 @@ def write_report(
             ],
         ),
         "",
-        "## Figures",
-        "",
     ]
+
+    if transient_baseline and transient_strained:
+        transient_metric = _transient_metrics(transient_baseline, transient_strained)
+        lines.extend(
+            [
+                "## Transient summary metrics",
+                "",
+                _format_table(
+                    ["Metric", "Baseline |I_D| [A]", "Strained |I_D| [A]", "Relative change [%]"],
+                    [
+                        [
+                            "Peak",
+                            _format_metric_value(transient_metric.peak_baseline),
+                            _format_metric_value(transient_metric.peak_strained),
+                            _format_relative_change(transient_metric.peak_relative_change_pct),
+                        ],
+                        [
+                            "RMS",
+                            _format_metric_value(transient_metric.rms_baseline),
+                            _format_metric_value(transient_metric.rms_strained),
+                            _format_relative_change(transient_metric.rms_relative_change_pct),
+                        ],
+                        [
+                            "Peak-to-peak",
+                            _format_metric_value(transient_metric.ptp_baseline),
+                            _format_metric_value(transient_metric.ptp_strained),
+                            _format_relative_change(transient_metric.ptp_relative_change_pct),
+                        ],
+                    ],
+                ),
+                "",
+                f"Phase lag of |I_D| behind applied ε_S (strained case): "
+                f"**{transient_metric.phase_lag_s * 1e3:.3f} ms** "
+                f"({transient_metric.phase_lag_s:.6g} s), estimated by cross-correlation.",
+                "",
+            ]
+        )
+
+    lines.extend(
+        [
+            "## Figures",
+            "",
+        ]
+    )
 
     for title, figure_path in figure_paths.items():
         rel = figure_path.relative_to(output_dir)
@@ -212,13 +342,15 @@ def write_report(
         lines.append("")
 
     if transient_baseline and transient_strained:
-        id_base = np.abs(find_column(transient_baseline, ("i(vdd)",)))
-        id_strained = np.abs(find_column(transient_strained, ("i(vdd)",)))
-        peak_delta = float(
-            (np.max(id_strained) - np.max(id_base)) / max(np.max(id_base), 1e-15) * 100.0
-        )
         lines.extend(
             [
+                "## Transient time series (sample)",
+                "",
+                _format_table(
+                    list(transient_strained.columns.keys()),
+                    _sample_rows(transient_strained),
+                ),
+                "",
                 "## Transient strain profile notes",
                 "",
                 f"- Profile: `{config.transient.profile.type}` "
@@ -226,8 +358,7 @@ def write_report(
                 f"frequency = {config.transient.profile.frequency:.3g} Hz)",
                 f"- Simulation window: 0 to {config.transient.tstop:.3g} s "
                 f"(step = {config.transient.tstep:.3g} s)",
-                f"- Peak |I_D| baseline = {float(np.max(id_base)):.6g} A, "
-                f"strained = {float(np.max(id_strained)):.6g} A, Δ = {peak_delta:.2f}%",
+                f"- Full transient CSV: `tb_strained_transient.csv`, `tb_baseline_transient.csv`",
                 "",
             ]
         )
@@ -245,3 +376,67 @@ def write_report(
 
     report_path.write_text("\n".join(lines), encoding="utf-8")
     return report_path
+
+
+def write_results_index(results_dir: Path) -> Path:
+    """Write or update the top-level results index markdown file."""
+    index_path = results_dir / "README.md"
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+
+    static_intro = [
+        "# Strain-SPICE evaluation results",
+        "",
+        "Generated simulation outputs from bundled and custom `strain-spice run` jobs.",
+        "Re-run `./scripts/run_all.sh` to refresh every bundled evaluation and this index.",
+        "",
+        "## How to read time-varying results",
+        "",
+        "Dynamic configs (`transient.enabled: true`) add transient testbenches and figures:",
+        "",
+        "- `figures/transient_comparison.svg` — applied strain ε_S(t) and drain current |I_D|(t)",
+        "- `figures/transient_controls.svg` — ΔVth and Δμ versus time",
+        "- `strain_comparison_report.md` — transient summary metrics, phase lag, and a time-series sample",
+        "",
+        f"Index last updated: {timestamp}",
+        "",
+        "## Evaluations",
+        "",
+    ]
+
+    evaluation_lines: list[str] = []
+    if results_dir.is_dir():
+        for child in sorted(results_dir.iterdir()):
+            if not child.is_dir():
+                continue
+            report_path = child / "strain_comparison_report.md"
+            if not report_path.is_file():
+                continue
+
+            name = child.name
+            evaluation_lines.append(
+                f"- **[{name}]({name}/strain_comparison_report.md)**"
+            )
+            figures_dir = child / "figures"
+            if (figures_dir / "transient_comparison.svg").is_file():
+                evaluation_lines.append(
+                    f"  - Time-varying: "
+                    f"[|I_D|(t)]({name}/figures/transient_comparison.svg), "
+                    f"[ΔVth/Δμ(t)]({name}/figures/transient_controls.svg), "
+                    f"[transient CSV]({name}/tb_strained_transient.csv)"
+                )
+            if (figures_dir / "magnitude_comparison.svg").is_file():
+                evaluation_lines.append(
+                    f"  - DC sweeps: "
+                    f"[magnitude]({name}/figures/magnitude_comparison.svg), "
+                    f"[direction]({name}/figures/direction_comparison.svg)"
+                )
+
+    if not evaluation_lines:
+        evaluation_lines.append(
+            "_No completed evaluations yet. Run `./scripts/run_all.sh` or a single "
+            "`strain-spice run --output results/<name>` job._"
+        )
+
+    index_path.parent.mkdir(parents=True, exist_ok=True)
+    index_path.write_text("\n".join(static_intro + evaluation_lines + [""]), encoding="utf-8")
+    return index_path

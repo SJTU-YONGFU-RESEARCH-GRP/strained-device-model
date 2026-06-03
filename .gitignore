@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
-results/
+results/*
+!results/README.md
 tests/_generated/
 *.osdi

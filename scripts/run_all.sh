@@ -21,7 +21,9 @@ usage() {
 Run all bundled strain-spice evaluations.
 
 Each job generates netlists, runs ngspice, plots figures, and writes a report
-under results/<name>/.
+under results/<name>/. After all selected jobs finish, results/README.md is
+refreshed with links to every completed evaluation (including time-varying
+figures when transient runs are present).
 
 Options:
   --skip-dynamic   Skip configs/bsim4_nmos_dynamic.yaml
@@ -129,6 +131,17 @@ run_evaluation() {
         --output "${output}"
 }
 
+write_results_index() {
+    log "updating ${RESULTS_DIR}/README.md"
+    python - <<'PY'
+from pathlib import Path
+
+from strain_spice.report import write_results_index
+
+write_results_index(Path("results"))
+PY
+}
+
 main() {
     parse_args "$@"
     cd "$ROOT_DIR"
@@ -162,7 +175,10 @@ main() {
         die "no evaluations selected; check --only names or --skip-dynamic"
     fi
 
+    write_results_index
+
     log "finished ${ran} evaluation(s); reports under ${RESULTS_DIR}/"
+    log "results index: ${RESULTS_DIR}/README.md"
 }
 
 main "$@"

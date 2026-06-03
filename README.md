@@ -370,6 +370,7 @@ strained-device-model/
 ```bash
 pytest
 ruff check src tests
+./scripts/readme_to_pdf.sh          # README.md -> README.pdf (use --use-kroki for Mermaid without mmdc)
 ```
 
 ## License

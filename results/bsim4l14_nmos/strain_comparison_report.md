@@ -1,14 +1,14 @@
 # BSIM4 level-14 NMOS strain evaluation
 
-Generated: 2026-06-03 13:30 UTC
+Generated: 2026-06-03 14:09 UTC
 
 ## Overview
 
 This report compares simulations **without** the strain wrapper (baseline device only)
 and **with** the generated strain-aware wrapper subcircuit.
 
-- Device netlist: `/mnt/d/proj/strained-device-model/models/bsim4l14_nmos.subckt`
-- Wrapper output directory: `/mnt/d/proj/strained-device-model/results/bsim4l14_nmos`
+- Device netlist: `/home/yongfu/proj/strained-device-model/models/bsim4l14_nmos.subckt`
+- Wrapper output directory: `/home/yongfu/proj/strained-device-model/results/bsim4l14_nmos`
 
 ## Strain model parameters
 
@@ -91,5 +91,5 @@ and **with** the generated strain-aware wrapper subcircuit.
 ## How to reproduce
 
 ```bash
-strain-spice run --device /mnt/d/proj/strained-device-model/models/bsim4l14_nmos.subckt --config <your-config.yaml> --output /mnt/d/proj/strained-device-model/results/bsim4l14_nmos
+strain-spice run --device /home/yongfu/proj/strained-device-model/models/bsim4l14_nmos.subckt --config <your-config.yaml> --output /home/yongfu/proj/strained-device-model/results/bsim4l14_nmos
 ```
