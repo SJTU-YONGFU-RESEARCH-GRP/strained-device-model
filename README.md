@@ -1,12 +1,14 @@
 # strained-device-model
 
+**A Time-Varying, Direction-Dependent Compact Model of Mechanical Strain Effects in Thin-Film Transistors**
+
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-green?logo=creativecommons&logoColor=white)](https://creativecommons.org/licenses/by/4.0/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-3776ab.svg)](https://www.python.org/downloads/)
 [![GitHub](https://img.shields.io/badge/GitHub-SJTU--YONGFU--RESEARCH--GRP%2Fstrained--device--model-181717?logo=github)](https://github.com/SJTU-YONGFU-RESEARCH-GRP/strained-device-model)
 
 **Repository:** [SJTU-YONGFU-RESEARCH-GRP/strained-device-model](https://github.com/SJTU-YONGFU-RESEARCH-GRP/strained-device-model)
 
-This repository provides a **device-agnostic strain-aware SPICE wrapper** and a Python workflow to wrap **one user `.subckt` at a time**, run **ngspice** simulations, and generate pre/post strain comparison figures plus a markdown report. The strain engine implements the Liu et al. **direction-aware** channel-strain map and optional **dynamic extensions** (mechanical bandwidth, strain-rate sensitivity, hysteresis, and transient strain profiles). Reference **BSIM3/BSIM4** MOS subcircuits and matching YAML configs are included for evaluation.
+This repository implements **A Time-Varying, Direction-Dependent Compact Model of Mechanical Strain Effects in Thin-Film Transistors**: a **device-agnostic strain-aware SPICE wrapper** and Python workflow to wrap **one user `.subckt` at a time**, run **ngspice** simulations, and generate pre/post strain comparison figures plus a markdown report. The strain engine implements a **direction-aware** channel-strain map (Liu et al., IEEE TNANO 2022) and optional **dynamic extensions**—mechanical bandwidth, strain-rate sensitivity, hysteresis, and transient strain profiles—that realize the time-varying compact model. Reference **BSIM3/BSIM4** MOS subcircuits and matching YAML configs are included for evaluation.
 
 ## Table of contents
 
@@ -381,13 +383,23 @@ Bundled BSIM model cards are generic reference parameters. Replace them with you
 
 ## References
 
+- **SJTU Yongfu Research Group**, “A Time-Varying, Direction-Dependent Compact Model of Mechanical Strain Effects in Thin-Film Transistors” — open implementation in this repository ([github.com/SJTU-YONGFU-RESEARCH-GRP/strained-device-model](https://github.com/SJTU-YONGFU-RESEARCH-GRP/strained-device-model)).
 - Y. Liu et al., “Tensile-Force-Resilient Biomedical Front-End Circuits Employing Auto-Calibrated Omni-Directional Thin-Film Transistors,” *IEEE Trans. Nanotechnol.*, vol. 21, pp. 575–585, 2022. [DOI: 10.1109/TNANO.2022.3208555](https://doi.org/10.1109/TNANO.2022.3208555)
 - [ngspice](https://ngspice.sourceforge.io/) circuit simulator
 - [models/README.md](models/README.md) — evaluation device notes
 
 ## Citation
 
-If you use this software in academic work, please cite the repository and the strain-model reference above:
+If you use this software in academic work, please cite the compact-model work and this repository. For the underlying direction-aware channel-strain map, also cite Liu et al. (2022) below.
+
+```bibtex
+@article{strained_device_model_compact,
+  title  = {A Time-Varying, Direction-Dependent Compact Model of Mechanical Strain Effects in Thin-Film Transistors},
+  author = {{SJTU Yongfu Research Group}},
+  year   = {2026},
+  note   = {Open implementation: \url{https://github.com/SJTU-YONGFU-RESEARCH-GRP/strained-device-model}}
+}
+```
 
 ```bibtex
 @software{strained_device_model,

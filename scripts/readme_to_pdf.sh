@@ -18,6 +18,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 README="${ROOT_DIR}/README.md"
+PDF_HEADER="${SCRIPT_DIR}/readme_pdf_header.tex"
 OUTPUT="${ROOT_DIR}/README.pdf"
 RENDER_MERMAID=1
 USE_KROKI=0
@@ -35,10 +36,12 @@ Options:
 Mermaid render order: mmdc on PATH, then npx @mermaid-js/mermaid-cli, then Kroki
 (if --use-kroki). Without any of these, the diagram stays a code block.
 
-PDF engine: pandoc with xelatex and DejaVu Serif / DejaVu Sans Mono.
+PDF engine: pandoc with xelatex, DejaVu Serif / DejaVu Sans Mono, and
+scripts/readme_pdf_header.tex (line breaks in code/tables, column-safe tables).
 
 Install hints (Debian/Ubuntu):
-  sudo apt-get install -y pandoc texlive-xetex texlive-fonts-recommended fonts-dejavu
+  sudo apt-get install -y pandoc texlive-xetex texlive-fonts-recommended \
+    texlive-latex-extra fonts-dejavu
 EOF
 }
 
@@ -157,6 +160,22 @@ lines = [
     for line in text.splitlines()
     if "shields.io" not in line and not line.startswith("[![")
 ]
+
+# Drop the hand-written TOC; pandoc --toc emits a typeset table of contents.
+filtered: list[str] = []
+skip_toc = False
+for line in lines:
+    if line.strip() == "## Table of contents":
+        skip_toc = True
+        continue
+    if skip_toc:
+        if line.startswith("## "):
+            skip_toc = False
+        else:
+            continue
+    filtered.append(line)
+lines = filtered
+
 body = "\n".join(lines) + "\n"
 
 pattern = re.compile(r"```mermaid\n(.*?)```", re.DOTALL)
@@ -221,14 +240,21 @@ main() {
     preprocess_markdown "${README}" "${md_path}" "${mermaid_png}" "${RENDER_MERMAID}"
 
     mkdir -p "$(dirname "${OUTPUT}")"
+    [[ -f "${PDF_HEADER}" ]] || die "missing LaTeX header: ${PDF_HEADER}"
+
     log "Building PDF -> ${OUTPUT}"
     pandoc "${md_path}" -o "${OUTPUT}" \
         --pdf-engine=xelatex \
         --resource-path="${WORK_DIR}" \
+        --include-in-header="${PDF_HEADER}" \
         -V geometry:margin=1in \
         -V fontsize=11pt \
         -V mainfont="DejaVu Serif" \
         -V monofont="DejaVu Sans Mono" \
+        -V monofontoptions="Scale=0.92" \
+        -V tables=true \
+        -V graphics=true \
+        --wrap=preserve \
         --toc \
         -V colorlinks=true \
         -V linkcolor=blue \

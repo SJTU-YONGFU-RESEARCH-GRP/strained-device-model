@@ -1,0 +1,40 @@
+% Layout fixes for README.md -> PDF (pandoc + xelatex).
+% - Break long monospace lines (code blocks, table paths, \texttt)
+% - Keep tables and images within the text column
+% - Reduce overfull boxes that show up as overlapping text in the PDF
+
+\usepackage{microtype}
+\usepackage{xurl}
+\usepackage{fvextra}
+\usepackage{etoolbox}
+
+% Allow line breaks in monospaced text (critical for XeLaTeX + DejaVu Sans Mono).
+\XeTeXlinebreaklocale{ "en" }
+\XeTeXlinebreakskip=0pt plus 1pt minus 0.5pt
+
+% Fenced code blocks (syntax highlighting) and plain verbatim environments.
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{%
+  breaklines=true,
+  breakanywhere=true,
+  commandchars=\\\{\}}
+\RecustomVerbatimEnvironment{verbatim}{Verbatim}{%
+  breaklines=true,
+  breakanywhere=true}
+\fvset{breaklines=true,breakanywhere=true}
+
+% Scale images to the line width (pandoc template also sets \maxwidth when graphics=true).
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\makeatother
+
+% Longtable: use full line width and give cell text more vertical room.
+\setlength{\LTpre}{0pt}
+\setlength{\LTpost}{0pt}
+\AtBeginEnvironment{longtable}{%
+  \setlength{\columnwidth}{\linewidth}%
+  \renewcommand{\arraystretch}{1.2}%
+}
+
+% Slightly more room for line breaking in prose and links.
+\setlength{\emergencystretch}{2.5em}
+\sloppy
