@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from textwrap import dedent
 
@@ -14,6 +14,7 @@ from strain_spice.config import (
     StrainSpiceConfig,
 )
 from strain_spice.parser import SubcktDefinition
+from strain_spice.strain_profiles import resolve_transient_profiles, strain_source_lines
 
 
 def _repo_root() -> Path:
@@ -103,6 +104,16 @@ def _strain_engine_params(config: StrainSpiceConfig) -> str:
 
 
 @dataclass(frozen=True)
+class TransientNetlistCase:
+    """Baseline and strained transient testbenches for one strain profile."""
+
+    slug: str
+    profile: StrainProfileConfig
+    baseline_tb: Path
+    strained_tb: Path
+
+
+@dataclass(frozen=True)
 class GeneratedNetlists:
     """Paths to generated netlist artifacts."""
 
@@ -115,8 +126,21 @@ class GeneratedNetlists:
     strained_direction_tb: Path
     baseline_transfer_tbs: list[Path]
     strained_transfer_tbs: list[Path]
-    baseline_transient_tb: Path | None = None
-    strained_transient_tb: Path | None = None
+    transient_cases: list[TransientNetlistCase] = field(default_factory=list)
+
+    @property
+    def baseline_transient_tb(self) -> Path | None:
+        """Return the first baseline transient testbench, if any."""
+        if not self.transient_cases:
+            return None
+        return self.transient_cases[0].baseline_tb
+
+    @property
+    def strained_transient_tb(self) -> Path | None:
+        """Return the first strained transient testbench, if any."""
+        if not self.transient_cases:
+            return None
+        return self.transient_cases[0].strained_tb
 
 
 def _format_instance_params(params: dict[str, float | str]) -> str:
@@ -245,33 +269,9 @@ def _strained_instance(config: StrainSpiceConfig) -> str:
     )
 
 
-def _strain_source_lines(profile: StrainProfileConfig) -> tuple[str, str]:
+def _strain_source_lines(profile: StrainProfileConfig, *, tstop: float) -> tuple[str, str]:
     """Return SPICE source declarations for applied strain and angle."""
-    profile_type = profile.type.lower()
-    if profile_type == "sine":
-        eps_source = (
-            f"Veps eps_s 0 SIN({profile.offset} {profile.amplitude} "
-            f"{profile.frequency} 0 0 0)"
-        )
-    elif profile_type == "pwl":
-        half_period = 0.5 / max(profile.frequency, 1e-6)
-        peak = profile.offset + profile.amplitude
-        eps_source = (
-            f"Veps eps_s 0 PWL(0 {profile.offset} "
-            f"{half_period:.6g} {peak:.6g} "
-            f"{2 * half_period:.6g} {profile.offset})"
-        )
-    else:
-        eps_source = f"Veps eps_s 0 dc {profile.offset}"
-
-    if profile.alpha_rate != 0.0:
-        alpha_source = (
-            f"Balpha alpha 0 V = '{{ {profile.alpha} + {profile.alpha_rate} * time }}'"
-        )
-    else:
-        alpha_source = f"Valp alpha 0 dc {profile.alpha}"
-
-    return eps_source, alpha_source
+    return strain_source_lines(profile, tstop=tstop)
 
 
 def _transient_testbench(
@@ -290,7 +290,7 @@ def _transient_testbench(
     """Build a transient simulation testbench with time-varying strain inputs."""
     header = _netlist_header(simulator)
     includes = "\n".join(_include_statement(simulator, name) for name in include_files)
-    eps_source, alpha_source = _strain_source_lines(profile)
+    eps_source, alpha_source = _strain_source_lines(profile, tstop=tstop)
     print_vars = ["time", "v(eps_s)", "v(alpha)", "i(Vdd)"]
 
     sections = [
@@ -567,41 +567,59 @@ def generate_netlists(
             baseline_transfer_tbs.append(baseline_path)
             strained_transfer_tbs.append(strained_path)
 
-    baseline_transient_tb = None
-    strained_transient_tb = None
+    transient_cases: list[TransientNetlistCase] = []
     if config.transient.enabled:
-        baseline_transient_tb = output_dir / f"tb_baseline_transient{suffix}"
-        strained_transient_tb = output_dir / f"tb_strained_transient{suffix}"
-        baseline_transient_tb.write_text(
-            _transient_testbench(
-                simulator=simulator,
-                include_files=[device_copy.name],
-                instance_line=_baseline_instance(device, config),
-                bias=bias,
-                mobility_bias=mobility_bias,
-                profile=config.transient.profile,
-                tstop=config.transient.tstop,
-                tstep=config.transient.tstep,
-                title="baseline transient strain profile",
-                wrapped=False,
-            ),
-            encoding="utf-8",
+        resolved = resolve_transient_profiles(config.transient)
+        legacy_names = (
+            not config.transient.run_all_presets
+            and not config.transient.profiles
+            and len(resolved) == 1
         )
-        strained_transient_tb.write_text(
-            _transient_testbench(
-                simulator=simulator,
-                include_files=["strain_wrap.inc"],
-                instance_line=_strained_instance(config),
-                bias=bias,
-                mobility_bias="",
-                profile=config.transient.profile,
-                tstop=config.transient.tstop,
-                tstep=config.transient.tstep,
-                title="strained transient strain profile",
-                wrapped=True,
-            ),
-            encoding="utf-8",
-        )
+        for case in resolved:
+            if legacy_names:
+                baseline_path = output_dir / f"tb_baseline_transient{suffix}"
+                strained_path = output_dir / f"tb_strained_transient{suffix}"
+            else:
+                baseline_path = output_dir / f"tb_baseline_transient_{case.slug}{suffix}"
+                strained_path = output_dir / f"tb_strained_transient_{case.slug}{suffix}"
+            baseline_path.write_text(
+                _transient_testbench(
+                    simulator=simulator,
+                    include_files=[device_copy.name],
+                    instance_line=_baseline_instance(device, config),
+                    bias=bias,
+                    mobility_bias=mobility_bias,
+                    profile=case.profile,
+                    tstop=config.transient.tstop,
+                    tstep=config.transient.tstep,
+                    title=f"baseline transient strain profile ({case.slug})",
+                    wrapped=False,
+                ),
+                encoding="utf-8",
+            )
+            strained_path.write_text(
+                _transient_testbench(
+                    simulator=simulator,
+                    include_files=["strain_wrap.inc"],
+                    instance_line=_strained_instance(config),
+                    bias=bias,
+                    mobility_bias="",
+                    profile=case.profile,
+                    tstop=config.transient.tstop,
+                    tstep=config.transient.tstep,
+                    title=f"strained transient strain profile ({case.slug})",
+                    wrapped=True,
+                ),
+                encoding="utf-8",
+            )
+            transient_cases.append(
+                TransientNetlistCase(
+                    slug=case.slug,
+                    profile=case.profile,
+                    baseline_tb=baseline_path,
+                    strained_tb=strained_path,
+                )
+            )
 
     return GeneratedNetlists(
         output_dir=output_dir,
@@ -613,6 +631,5 @@ def generate_netlists(
         strained_direction_tb=strained_direction,
         baseline_transfer_tbs=baseline_transfer_tbs,
         strained_transfer_tbs=strained_transfer_tbs,
-        baseline_transient_tb=baseline_transient_tb,
-        strained_transient_tb=strained_transient_tb,
+        transient_cases=transient_cases,
     )

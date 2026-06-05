@@ -51,9 +51,11 @@ Bundled ngspice evaluations:
   bsim4_pmos
   bsim4l14_nmos
   bsim4_nmos_dynamic
+  transient_profiles_ngspice
 
 Bundled Spectre evaluation (requires Cadence Spectre on PATH):
   strain_demo_spectre
+  transient_profiles_spectre
 EOF
 }
 
@@ -220,6 +222,7 @@ main() {
             "bsim4_pmos|models/bsim4_pmos.subckt|configs/bsim4_pmos.yaml"
             "bsim4l14_nmos|models/bsim4l14_nmos.subckt|configs/bsim4l14_nmos.yaml"
             "bsim4_nmos_dynamic|models/bsim4_nmos.subckt|configs/bsim4_nmos_dynamic.yaml"
+            "transient_profiles_ngspice|models/bsim4_nmos.subckt|configs/transient_profiles_ngspice.yaml"
         )
 
         for job in "${ngspice_jobs[@]}"; do
@@ -246,6 +249,19 @@ main() {
                     "$name" \
                     "models/strain_demo_mos.subckt" \
                     "configs/strain_demo.yaml" \
+                    "${RESULTS_DIR}/${name}" \
+                    spectre
+                ran=$((ran + 1))
+            else
+                log "skipping ${name}"
+            fi
+
+            name="transient_profiles_spectre"
+            if should_run "$name"; then
+                run_evaluation \
+                    "$name" \
+                    "models/strain_demo_mos.subckt" \
+                    "configs/transient_profiles_spectre.yaml" \
                     "${RESULTS_DIR}/${name}" \
                     spectre
                 ran=$((ran + 1))

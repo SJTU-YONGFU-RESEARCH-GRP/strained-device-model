@@ -61,11 +61,19 @@ class StrainProfileConfig:
     """Time-varying applied strain profile for transient simulation (Option 1)."""
 
     type: str = "sine"
+    name: str = ""
     amplitude: float = 0.005
     frequency: float = 0.3
     offset: float = 0.0
     alpha: float = 0.0
     alpha_rate: float = 0.0
+    rate: float = 0.0
+    t_step: float = 1.0
+    value_after: float | None = None
+    duty: float = 0.5
+    rise_time: float = 0.001
+    fall_time: float = 0.001
+    points: list[list[float]] = field(default_factory=list)
 
 
 @dataclass
@@ -75,7 +83,9 @@ class TransientConfig:
     enabled: bool = False
     tstop: float = 5.0
     tstep: float = 0.01
+    run_all_presets: bool = False
     profile: StrainProfileConfig = field(default_factory=StrainProfileConfig)
+    profiles: list[StrainProfileConfig] = field(default_factory=list)
 
 
 @dataclass
@@ -175,11 +185,15 @@ class StrainSpiceConfig:
 
         transient_raw = data.get("transient", {})
         profile = StrainProfileConfig(**transient_raw.get("profile", {}))
+        profiles_raw = transient_raw.get("profiles", [])
+        profiles = [StrainProfileConfig(**item) for item in profiles_raw]
         transient = TransientConfig(
             enabled=transient_raw.get("enabled", False),
             tstop=transient_raw.get("tstop", 5.0),
             tstep=transient_raw.get("tstep", 0.01),
+            run_all_presets=transient_raw.get("run_all_presets", False),
             profile=profile,
+            profiles=profiles,
         )
 
         sweeps_raw = data.get("sweeps", {})

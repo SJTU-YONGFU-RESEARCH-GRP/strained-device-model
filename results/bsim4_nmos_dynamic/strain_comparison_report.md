@@ -1,6 +1,6 @@
 # BSIM4 NMOS dynamic strain evaluation
 
-Generated: 2026-06-03 15:47 UTC
+Generated: 2026-06-05 08:46 UTC
 
 ## Overview
 
@@ -46,7 +46,7 @@ and **with** the generated strain-aware wrapper subcircuit.
 | RMS | 0.00024057 | 0.000146249 | -39.208 |
 | Peak-to-peak | 0 | 0.00024057 | — |
 
-Phase lag of |I_D| behind applied ε_S (strained case): **-350.000 ms** (-0.35 s), estimated by cross-correlation.
+Phase lag of |I_D| behind applied ε_S (strained case, `sine`): **-350.000 ms** (-0.35 s), estimated by cross-correlation.
 
 ## Figures
 
@@ -66,13 +66,13 @@ Phase lag of |I_D| behind applied ε_S (strained case): **-350.000 ms** (-0.35 s
 
 ![Transfer characteristics](figures/transfer_comparison.svg)
 
-### Dynamic transient response
+### Dynamic transient response (sine)
 
-![Dynamic transient response](figures/transient_comparison.svg)
+![Dynamic transient response (sine)](figures/transient_comparison.svg)
 
-### Dynamic parameter shifts
+### Dynamic parameter shifts (sine)
 
-![Dynamic parameter shifts](figures/transient_controls.svg)
+![Dynamic parameter shifts (sine)](figures/transient_controls.svg)
 
 ## Strain magnitude sweep data (sample)
 
@@ -121,7 +121,7 @@ Phase lag of |I_D| behind applied ε_S (strained case): **-350.000 ms** (-0.35 s
 
 ## Transient strain profile notes
 
-- Profile: `sine` (amplitude = 0.500%, frequency = 0.3 Hz)
+- Profile: `sine` — sine (offset = 0.000%, amplitude = 0.500%, frequency = 0.3 Hz)
 - Simulation window: 0 to 5 s (step = 0.01 s)
 - Full transient CSV: `tb_strained_transient.csv`, `tb_baseline_transient.csv`
 

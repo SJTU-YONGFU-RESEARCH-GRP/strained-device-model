@@ -11,6 +11,7 @@ src/strain_spice/plots.py
 src/strain_spice/report.py
 src/strain_spice/simulator.py
 src/strain_spice/strain_math.py
+src/strain_spice/strain_profiles.py
 src/strain_spice.egg-info/PKG-INFO
 src/strain_spice.egg-info/SOURCES.txt
 src/strain_spice.egg-info/dependency_links.txt
@@ -22,3 +23,4 @@ tests/test_parser.py
 tests/test_report.py
 tests/test_simulator.py
 tests/test_strain_math.py
+tests/test_strain_profiles.py

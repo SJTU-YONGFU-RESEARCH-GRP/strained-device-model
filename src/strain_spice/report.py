@@ -8,8 +8,24 @@ from pathlib import Path
 
 import numpy as np
 
-from strain_spice.config import StrainSpiceConfig
+from strain_spice.config import StrainProfileConfig, StrainSpiceConfig
 from strain_spice.simulator import SimulationResult, find_column
+from strain_spice.strain_profiles import describe_profile
+
+
+@dataclass(frozen=True)
+class TransientCaseResult:
+    """Paired baseline/strained transient simulations for one strain profile."""
+
+    slug: str
+    profile: StrainProfileConfig
+    baseline: SimulationResult
+    strained: SimulationResult
+
+    @property
+    def metrics(self) -> TransientMetrics:
+        """Compute summary metrics for this transient case."""
+        return _transient_metrics(self.baseline, self.strained)
 
 
 @dataclass(frozen=True)
@@ -171,8 +187,7 @@ def write_report(
     direction_strained: SimulationResult,
     transfer_baseline: list[SimulationResult] | None,
     transfer_strained: list[SimulationResult] | None,
-    transient_baseline: SimulationResult | None = None,
-    transient_strained: SimulationResult | None = None,
+    transient_cases: list[TransientCaseResult] | None = None,
     figure_paths: dict[str, Path],
 ) -> Path:
     """Write a markdown report comparing pre and post strain effects."""
@@ -260,42 +275,76 @@ def write_report(
         "",
     ]
 
-    if transient_baseline and transient_strained:
-        transient_metric = _transient_metrics(transient_baseline, transient_strained)
-        lines.extend(
-            [
-                "## Transient summary metrics",
-                "",
-                _format_table(
-                    ["Metric", "Baseline |I_D| [A]", "Strained |I_D| [A]", "Relative change [%]"],
-                    [
+    if transient_cases:
+        if len(transient_cases) > 1:
+            lines.extend(
+                [
+                    "## Transient profile comparison",
+                    "",
+                    _format_table(
                         [
-                            "Peak",
-                            _format_metric_value(transient_metric.peak_baseline),
-                            _format_metric_value(transient_metric.peak_strained),
-                            _format_relative_change(transient_metric.peak_relative_change_pct),
+                            "Profile",
+                            "Peak Δ [%]",
+                            "RMS Δ [%]",
+                            "Peak-to-peak Δ [%]",
+                            "Phase lag [ms]",
                         ],
                         [
-                            "RMS",
-                            _format_metric_value(transient_metric.rms_baseline),
-                            _format_metric_value(transient_metric.rms_strained),
-                            _format_relative_change(transient_metric.rms_relative_change_pct),
+                            [
+                                case.slug,
+                                _format_relative_change(case.metrics.peak_relative_change_pct),
+                                _format_relative_change(case.metrics.rms_relative_change_pct),
+                                _format_relative_change(case.metrics.ptp_relative_change_pct),
+                                f"{case.metrics.phase_lag_s * 1e3:.3f}",
+                            ]
+                            for case in transient_cases
                         ],
+                    ),
+                    "",
+                ]
+            )
+
+        for case in transient_cases:
+            transient_metric = case.metrics
+            section_title = (
+                f"## Transient summary metrics ({case.slug})"
+                if len(transient_cases) > 1
+                else "## Transient summary metrics"
+            )
+            lines.extend(
+                [
+                    section_title,
+                    "",
+                    _format_table(
+                        ["Metric", "Baseline |I_D| [A]", "Strained |I_D| [A]", "Relative change [%]"],
                         [
-                            "Peak-to-peak",
-                            _format_metric_value(transient_metric.ptp_baseline),
-                            _format_metric_value(transient_metric.ptp_strained),
-                            _format_relative_change(transient_metric.ptp_relative_change_pct),
+                            [
+                                "Peak",
+                                _format_metric_value(transient_metric.peak_baseline),
+                                _format_metric_value(transient_metric.peak_strained),
+                                _format_relative_change(transient_metric.peak_relative_change_pct),
+                            ],
+                            [
+                                "RMS",
+                                _format_metric_value(transient_metric.rms_baseline),
+                                _format_metric_value(transient_metric.rms_strained),
+                                _format_relative_change(transient_metric.rms_relative_change_pct),
+                            ],
+                            [
+                                "Peak-to-peak",
+                                _format_metric_value(transient_metric.ptp_baseline),
+                                _format_metric_value(transient_metric.ptp_strained),
+                                _format_relative_change(transient_metric.ptp_relative_change_pct),
+                            ],
                         ],
-                    ],
-                ),
-                "",
-                f"Phase lag of |I_D| behind applied ε_S (strained case): "
-                f"**{transient_metric.phase_lag_s * 1e3:.3f} ms** "
-                f"({transient_metric.phase_lag_s:.6g} s), estimated by cross-correlation.",
-                "",
-            ]
-        )
+                    ),
+                    "",
+                    f"Phase lag of |I_D| behind applied ε_S (strained case, `{case.slug}`): "
+                    f"**{transient_metric.phase_lag_s * 1e3:.3f} ms** "
+                    f"({transient_metric.phase_lag_s:.6g} s), estimated by cross-correlation.",
+                    "",
+                ]
+            )
 
     lines.extend(
         [
@@ -341,27 +390,30 @@ def write_report(
             )
         lines.append("")
 
-    if transient_baseline and transient_strained:
-        lines.extend(
-            [
-                "## Transient time series (sample)",
-                "",
-                _format_table(
-                    list(transient_strained.columns.keys()),
-                    _sample_rows(transient_strained),
-                ),
-                "",
-                "## Transient strain profile notes",
-                "",
-                f"- Profile: `{config.transient.profile.type}` "
-                f"(amplitude = {config.transient.profile.amplitude * 100:.3f}%, "
-                f"frequency = {config.transient.profile.frequency:.3g} Hz)",
-                f"- Simulation window: 0 to {config.transient.tstop:.3g} s "
-                f"(step = {config.transient.tstep:.3g} s)",
-                f"- Full transient CSV: `tb_strained_transient.csv`, `tb_baseline_transient.csv`",
-                "",
-            ]
-        )
+    if transient_cases:
+        for case in transient_cases:
+            slug_suffix = f" ({case.slug})" if len(transient_cases) > 1 else ""
+            csv_suffix = f"_{case.slug}" if len(transient_cases) > 1 else ""
+            lines.extend(
+                [
+                    f"## Transient time series (sample){slug_suffix}",
+                    "",
+                    _format_table(
+                        list(case.strained.columns.keys()),
+                        _sample_rows(case.strained),
+                    ),
+                    "",
+                    f"## Transient strain profile notes{slug_suffix}",
+                    "",
+                    f"- Profile: `{case.profile.type}` — "
+                    f"{describe_profile(case.profile, tstop=config.transient.tstop)}",
+                    f"- Simulation window: 0 to {config.transient.tstop:.3g} s "
+                    f"(step = {config.transient.tstep:.3g} s)",
+                    f"- Full transient CSV: `tb_strained_transient{csv_suffix}.csv`, "
+                    f"`tb_baseline_transient{csv_suffix}.csv`",
+                    "",
+                ]
+            )
 
     lines.extend(
         [
@@ -391,11 +443,13 @@ def write_results_index(results_dir: Path) -> Path:
         "",
         "## How to read time-varying results",
         "",
-        "Dynamic configs (`transient.enabled: true`) add transient testbenches and figures:",
+        "Dynamic configs (`transient.enabled: true`) add transient testbenches and figures.",
+        "Use `transient.run_all_presets: true` to exercise the built-in profile library "
+        "(sine, drift, abrupt, pulse, triangle PWL, custom PWL) in one run.",
         "",
-        "- `figures/transient_comparison.svg` — applied strain ε_S(t) and drain current |I_D|(t)",
-        "- `figures/transient_controls.svg` — ΔVth and Δμ versus time",
-        "- `strain_comparison_report.md` — transient summary metrics, phase lag, and a time-series sample",
+        "- `figures/transient_comparison[_<profile>].svg` — applied strain ε_S(t) and drain current |I_D|(t)",
+        "- `figures/transient_controls[_<profile>].svg` — ΔVth and Δμ versus time",
+        "- `strain_comparison_report.md` — per-profile metrics plus a comparison table when multiple profiles run",
         "",
         f"Index last updated: {timestamp}",
         "",
@@ -417,7 +471,28 @@ def write_results_index(results_dir: Path) -> Path:
                 f"- **[{name}]({name}/strain_comparison_report.md)**"
             )
             figures_dir = child / "figures"
-            if (figures_dir / "transient_comparison.svg").is_file():
+            transient_figures = sorted(figures_dir.glob("transient_comparison*.svg"))
+            if transient_figures:
+                for figure_path in transient_figures:
+                    slug = figure_path.stem.removeprefix("transient_comparison")
+                    slug_label = slug.removeprefix("_") or "default"
+                    controls_name = (
+                        f"transient_controls{slug}.svg"
+                        if slug
+                        else "transient_controls.svg"
+                    )
+                    csv_name = (
+                        f"tb_strained_transient{slug}.csv"
+                        if slug
+                        else "tb_strained_transient.csv"
+                    )
+                    evaluation_lines.append(
+                        f"  - Time-varying ({slug_label}): "
+                        f"[|I_D|(t)]({name}/figures/{figure_path.name}), "
+                        f"[ΔVth/Δμ(t)]({name}/figures/{controls_name}), "
+                        f"[transient CSV]({name}/{csv_name})"
+                    )
+            elif (figures_dir / "transient_comparison.svg").is_file():
                 evaluation_lines.append(
                     f"  - Time-varying: "
                     f"[|I_D|(t)]({name}/figures/transient_comparison.svg), "

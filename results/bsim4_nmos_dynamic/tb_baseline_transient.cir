@@ -1,4 +1,4 @@
-* baseline transient strain profile
+* baseline transient strain profile (sine)
 .include bsim4_nmos.subckt
 Veps eps_s 0 SIN(0.0 0.005 0.3 0 0 0)
 Valp alpha 0 dc 0.0

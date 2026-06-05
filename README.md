@@ -127,7 +127,7 @@ flowchart LR
 
 | Option | YAML keys | Effect |
 | --- | --- | --- |
-| 1. Time-varying strain | `transient.enabled`, `transient.profile` | `.tran` testbench with sine or PWL strain sources |
+| 1. Time-varying strain | `transient.enabled`, `transient.profile`, `transient.run_all_presets` | `.tran` testbench with sine, drift, abrupt, pulse, triangle PWL, or custom PWL sources |
 | 2. Mechanical bandwidth | `dynamic.mechanical_tau` | RC low-pass on `ε_S` before the Liu channel map |
 | 3. Strain-rate terms | `dynamic.beta_r`, `dynamic.gamma_r` | Adds `dε_T/dt` to ΔVth and Δμ |
 | 4. Hysteresis | `dynamic.hysteresis.*` | Asymmetric load/unload tracking on `ε_T` |
@@ -325,12 +325,25 @@ transient:
   tstop: 5.0                # simulation end time [s]
   tstep: 0.01               # time step [s]
   profile:
-    type: sine              # sine | pwl | dc
+    type: sine              # sine | drift | abrupt | pulse | pwl | custom | dc
     amplitude: 0.005        # peak strain (0.005 = 0.5%)
-    frequency: 0.3          # Hz (sine/pwl)
+    frequency: 0.3          # Hz (sine/pulse/pwl)
     offset: 0.0
+    rate: 0.001             # strain/s (drift)
+    t_step: 1.0             # step time [s] (abrupt)
+    value_after: 0.005      # post-step strain (abrupt)
+    duty: 0.5               # pulse duty cycle
+    points:                 # custom PWL [[t, eps], ...]
+      - [0.0, 0.0]
+      - [1.0, 0.005]
+      - [5.0, 0.0]
     alpha: 0.0              # fixed force angle [rad]
     alpha_rate: 0.0         # optional dα/dt [rad/s]; uses a behavioral source when non-zero
+
+# Run every built-in preset (sine, drift, abrupt, pulse, pwl, custom) in one job:
+# transient:
+#   enabled: true
+#   run_all_presets: true
 ```
 
 See `configs/bsim4_nmos_dynamic.yaml` for a complete working example with all four options enabled.

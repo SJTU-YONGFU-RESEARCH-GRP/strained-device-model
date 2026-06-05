@@ -15,7 +15,7 @@ from strain_spice.plots import (
     plot_transfer_comparison,
     plot_transient_comparison,
 )
-from strain_spice.report import write_report
+from strain_spice.report import TransientCaseResult, write_report
 from strain_spice.simulator import (
     SimulationResult,
     create_runner,
@@ -73,18 +73,17 @@ def run_pipeline(
             for index, path in enumerate(netlists.strained_transfer_tbs)
         ]
 
-    transient_baseline = None
-    transient_strained = None
-    if netlists.baseline_transient_tb and netlists.strained_transient_tb:
-        transient_baseline = simulate(
-            netlists.baseline_transient_tb,
-            "baseline_transient",
-            analysis="tran",
-        )
-        transient_strained = simulate(
-            netlists.strained_transient_tb,
-            "strained_transient",
-            analysis="tran",
+    transient_case_results: list[TransientCaseResult] = []
+    for case in netlists.transient_cases:
+        baseline = simulate(case.baseline_tb, f"baseline_transient_{case.slug}", analysis="tran")
+        strained = simulate(case.strained_tb, f"strained_transient_{case.slug}", analysis="tran")
+        transient_case_results.append(
+            TransientCaseResult(
+                slug=case.slug,
+                profile=case.profile,
+                baseline=baseline,
+                strained=strained,
+            )
         )
 
     figures_dir = output_dir / "figures"
@@ -110,16 +109,15 @@ def run_pipeline(
         )
         figure_paths["Transfer characteristics"] = transfer_figure
 
-    if transient_baseline and transient_strained:
-        transient_figure = figures_dir / "transient_comparison.svg"
-        plot_transient_comparison(transient_baseline, transient_strained, transient_figure)
-        figure_paths["Dynamic transient response"] = transient_figure
-        plot_strain_controls(
-            transient_strained,
-            figures_dir / "transient_controls.svg",
-            config,
-        )
-        figure_paths["Dynamic parameter shifts"] = figures_dir / "transient_controls.svg"
+    for case_result in transient_case_results:
+        slug_suffix = f"_{case_result.slug}" if len(transient_case_results) > 1 else ""
+        transient_figure = figures_dir / f"transient_comparison{slug_suffix}.svg"
+        controls_figure = figures_dir / f"transient_controls{slug_suffix}.svg"
+        plot_transient_comparison(case_result.baseline, case_result.strained, transient_figure)
+        plot_strain_controls(case_result.strained, controls_figure, config)
+        title_prefix = f"Dynamic transient response ({case_result.slug})"
+        figure_paths[title_prefix] = transient_figure
+        figure_paths[f"Dynamic parameter shifts ({case_result.slug})"] = controls_figure
 
     report_path = write_report(
         config=config,
@@ -131,8 +129,7 @@ def run_pipeline(
         direction_strained=direction_strained,
         transfer_baseline=transfer_baseline,
         transfer_strained=transfer_strained,
-        transient_baseline=transient_baseline,
-        transient_strained=transient_strained,
+        transient_cases=transient_case_results,
         figure_paths=figure_paths,
     )
 
