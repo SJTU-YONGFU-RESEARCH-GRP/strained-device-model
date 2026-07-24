@@ -168,10 +168,11 @@ Optional:
 git clone https://github.com/SJTU-YONGFU-RESEARCH-GRP/strained-device-model.git
 cd strained-device-model
 
-python3 -m venv .venv
+./scripts/install.sh
 source .venv/bin/activate
-pip install -e ".[dev]"
 ```
+
+Uses [uv](https://docs.astral.sh/uv/) when available (`pyproject.toml` + `uv.lock`).
 
 Verify ngspice is available:
 

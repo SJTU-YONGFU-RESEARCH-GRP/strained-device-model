@@ -28,7 +28,10 @@ Options:
 
 Environment:
   PYTHON           Python interpreter (default: python3)
-  PIP              Pip executable (default: pip)
+  PIP              Pip executable (default: pip; used only when uv is unavailable)
+
+Reproducible installs use uv when present (pyproject.toml + uv.lock).
+Fallback: python -m venv + pip install -e .
 EOF
 }
 
@@ -77,17 +80,48 @@ PY
 }
 
 ensure_python() {
+    if command -v uv >/dev/null 2>&1 && [[ -f "${ROOT_DIR}/pyproject.toml" ]]; then
+        local uv_python
+        uv_python="$(uv python find 2>/dev/null || true)"
+        if [[ -z "$uv_python" ]]; then
+            log "installing Python 3.10 via uv"
+            uv python install 3.10
+            uv_python="$(uv python find)"
+        fi
+        log "using uv-managed $( "$uv_python" --version 2>&1 )"
+        return 0
+    fi
+
     command -v "$PYTHON" >/dev/null 2>&1 || die "Python not found: $PYTHON"
     python_version_ok || die "Python 3.10+ required (found: $("$PYTHON" --version 2>&1))"
     log "using $("$PYTHON" --version 2>&1)"
 }
 
 ensure_venv() {
+    if command -v uv >/dev/null 2>&1 && [[ -f "${ROOT_DIR}/pyproject.toml" ]]; then
+        log "syncing virtual environment with uv at $VENV_DIR"
+        uv venv "$VENV_DIR" --allow-existing
+        if [[ ! -f "${ROOT_DIR}/uv.lock" ]]; then
+            log "generating uv.lock"
+            (cd "$ROOT_DIR" && uv lock)
+        fi
+        if [[ "$INSTALL_DEV" -eq 1 ]]; then
+            (cd "$ROOT_DIR" && uv sync --frozen --extra dev)
+        else
+            (cd "$ROOT_DIR" && uv sync --frozen)
+        fi
+        # shellcheck disable=SC1091
+        source "${VENV_DIR}/bin/activate"
+        PYTHON="${VENV_DIR}/bin/python"
+        PIP="${VENV_DIR}/bin/pip"
+        return 0
+    fi
+
     if [[ ! -d "$VENV_DIR" ]]; then
-        log "creating virtual environment at $VENV_DIR"
+        log "creating virtual environment at $VENV_DIR (pip fallback)"
         "$PYTHON" -m venv "$VENV_DIR"
     else
-        log "reusing virtual environment at $VENV_DIR"
+        log "reusing virtual environment at $VENV_DIR (pip fallback)"
     fi
 
     # shellcheck disable=SC1091
@@ -97,6 +131,11 @@ ensure_venv() {
 }
 
 install_python_package() {
+    if command -v uv >/dev/null 2>&1 && [[ -f "${ROOT_DIR}/uv.lock" ]]; then
+        log "strain-spice installed via uv sync"
+        return 0
+    fi
+
     log "upgrading pip"
     "$PIP" install --upgrade pip
 

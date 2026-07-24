@@ -1,8 +1,22 @@
 .venv/
+.cursor/skills/*/.venv/
+.cursor/skills/*/scripts/api_keys.sh
+.cursor/skills/*/scripts/env.local.sh
+.env
+.env.*
+!.env.example
+!.env.*.example
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.mypy_cache/
+.ruff_cache/
 results/*
 !results/README.md
 tests/_generated/
 *.osdi
+
+# Editor and operating-system artifacts
