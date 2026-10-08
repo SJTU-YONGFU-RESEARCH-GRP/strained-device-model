@@ -1,0 +1,5 @@
+simulator lang=spectre
+subckt strain_demo_mos d g s b
+  parameters kp=2e-4 vth=0.35 lambda=0.02
+  Id1 (d s) bsource i = kp*max(0, v(g)-v(s)-vth)*(1+lambda*max(0, v(d)-v(s)))
+ends strain_demo_mos

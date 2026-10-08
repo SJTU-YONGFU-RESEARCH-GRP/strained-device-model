@@ -1,0 +1,12 @@
+* baseline transient strain profile (pwl)
+.include bsim4_nmos.subckt
+Veps eps_s 0 PWL(0 0 1.66667 0.005 3.33333 0)
+Valp alpha 0 dc 0.0
+Vdd d 0 dc 1.0
+Vgs g 0 dc 0.75
+Vss s 0 dc 0.0
+Vbb b 0 dc 0.0
+Xdev d g s b bsim4_nmos W=10u L=180n
+.tran 0.01 5.0
+.print tran time v(eps_s) v(alpha) i(Vdd)
+.end

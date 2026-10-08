@@ -1,0 +1,312 @@
+ahdlcmicompile: Compiling ahdlcmi in ./tb_strained_transfer_1.ahdlSimDB//80383de8f4d79cb0dce0f2a4e706b2d0.strain_engine.ahdlcmi/Linux-64/ for Linux-64 with optimize using gcc on Wed Jun  3 23:48:04 CST 2026 [5.0]
+ahdlcmicompile: Generating makefile
+PATH:  /eda/cadence/SPECTRE241/bin:/eda/cadence/SPECTRE241/tools/bin/64bit:/eda/cadence/SPECTRE241/tools/bin:/home/yongfu/proj/strained-device-model/.venv/bin:/eda/cadence/PVS241/tools/bin:/eda/cadence/SPECTRE241/tools/spectre/bin:/eda/cadence/IC231/tools/bin:/eda/cadence/IC231/tools/dfII/bin:/eda/calibre2020/aoj_cal_2020.4_34.17/bin:/home/yongfu/.local/bin:/home/yongfu/bin:/usr/local/balsa/bin:/usr/share/Modules/bin:/usr/local/cuda/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/bin
+LD_LIBRARY_PATH:  /eda/cadence/SPECTRE241/tools/TPtools/libstdc++6/lib/64bit:/eda/cadence/SPECTRE241/tools/TPtools/cuda/lib64:/eda/cadence/SPECTRE241/tools/giganta/lib/64bit:/eda/cadence/SPECTRE241/tools/mdl/lib/64bit:/eda/cadence/SPECTRE241/tools/mmsim/lib/64bit:/eda/cadence/SPECTRE241/tools/hdf/lib/64bit:/eda/cadence/SPECTRE241/tools/python/64bit/lib:/eda/cadence/SPECTRE241/tools/inca/lib/64bit:/eda/cadence/SPECTRE241/tools/awrmwo/lib/64bit:/eda/cadence/SPECTRE241/tools/spectre/lib/64bit:/eda/cadence/SPECTRE241/tools/dfII/lib/64bit:/eda/cadence/SPECTRE241/tools/TPtools/libstdc++/lib64:/eda/cadence/SPECTRE241/tools/TPtools/zlib/lib64:/eda/cadence/SPECTRE241/tools/TPtools/abseil/lib64:/eda/cadence/SPECTRE241/tools/TPtools/grpc/lib64:/eda/cadence/SPECTRE241/tools/TPtools/protobuf/lib64:/eda/cadence/SPECTRE241/tools/TPtools/libffi/lib64:/eda/cadence/SPECTRE241/tools/fmc/lib/64bit:/eda/cadence/SPECTRE241/tools/lib/64bit:/eda/cadence/SPECTRE241/tools/lib/64bit:/eda/cadence/SPECTRE241/tools/lib:/eda/cadence/SPECTRE241/tools/lib/64bit/RHEL/RHEL9:/usr/local/balsa/lib:/usr/local/lib
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/bin/gnumake -j1 -f GNUmakefile
+Cleaning ./obj/optimize/5.0
+rm -f -rf ./obj/optimize/5.0
+Compiling C file strain_engine_func.c (optimize)
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/bin/64bit/ahdlcc 0 /eda/cadence/SPECTRE241/tools.lnx86/cdsgcc/gcc/12.3/bin/gcc  -ffast-math  -fno-unsafe-math-optimizations -Wno-error=int-conversion -O3 -m64 -DSYSV -DSVR4 -D_REENTRANT -fPIC   -DconfigSPECTRE -I. -I/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include -c strain_engine_func.c -o obj/optimize/5.0/strain_engine_func.o || rm -f -f obj/optimize/5.0/strain_engine_func.o
+<stdin>: In function 'strain_engine_Initialize':
+<stdin>:490:49: warning: passing argument 3 of 'aslDevLaplaceAllocState' makes integer from pointer without a cast [-Wint-conversion]
+In file included from <stdin>:24:
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2225:77: note: expected 'long int' but argument is of type 'void *'
+ 2225 | ASL_FUNC_DECL_START extern msgSeverity aslDevLaplaceAllocState( long, long, long, struct ahdlFuncModeParam * );
+      |                                                                             ^~~~
+<stdin>:492:155: warning: passing argument 6 of 'aslDevDoLaplaceNewInit' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2213:93: note: expected 'void *' but argument is of type 'long int'
+ 2213 | ASL_FUNC_DECL_START extern int aslDevDoLaplaceNewInit ( int,  void *,  int,  void *,  int,  void *,  int, struct ahdlFuncModeParam * );
+      |                                                                                             ^~~~~~
+<stdin>: In function 'strain_engine_GetMatrixPointers':
+<stdin>:700:51: warning: passing argument 3 of 'aslDevLaplaceAllocStencil' makes integer from pointer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2219:79: note: expected 'long int' but argument is of type 'void *'
+ 2219 | ASL_FUNC_DECL_START extern msgSeverity aslDevLaplaceAllocStencil( long, long, long, struct ahdlFuncModeParam * );
+      |                                                                               ^~~~
+<stdin>: In function 'strain_engine_DeleteStencil':
+<stdin>:929:52: warning: passing argument 3 of 'aslDevLaplaceDeleteStencil' makes integer from pointer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2221:80: note: expected 'long int' but argument is of type 'void *'
+ 2221 | ASL_FUNC_DECL_START extern msgSeverity aslDevLaplaceDeleteStencil( long, long, long, struct ahdlFuncModeParam * );
+      |                                                                                ^~~~
+<stdin>: In function 'strain_engine_Delete':
+<stdin>:950:45: warning: passing argument 3 of 'aslDevLaplaceDelete' makes integer from pointer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2223:73: note: expected 'long int' but argument is of type 'void *'
+ 2223 | ASL_FUNC_DECL_START extern msgSeverity aslDevLaplaceDelete( long, long, long, struct ahdlFuncModeParam * );
+      |                                                                         ^~~~
+rm -f -rf strain_engine_func.c
+Compiling C file strain_engine_DcFuncDerLoad.c (optimize)
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/bin/64bit/ahdlcc 0 /eda/cadence/SPECTRE241/tools.lnx86/cdsgcc/gcc/12.3/bin/gcc  -ffast-math  -fno-unsafe-math-optimizations -Wno-error=int-conversion -O3 -m64 -DSYSV -DSVR4 -D_REENTRANT -fPIC   -DconfigSPECTRE -I. -I/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include -c strain_engine_DcFuncDerLoad.c -o obj/optimize/5.0/strain_engine_DcFuncDerLoad.o || rm -f -f obj/optimize/5.0/strain_engine_DcFuncDerLoad.o
+<stdin>: In function 'strain_engine_DcFuncDerLoad':
+<stdin>:318:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+In file included from <stdin>:24:
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:320:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:322:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:324:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:326:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:328:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:339:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:341:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:343:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:345:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:347:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:349:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:359:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:361:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:362:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+rm -f -rf strain_engine_DcFuncDerLoad.c
+Compiling C file strain_engine_DcFuncLoad.c (optimize)
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/bin/64bit/ahdlcc 0 /eda/cadence/SPECTRE241/tools.lnx86/cdsgcc/gcc/12.3/bin/gcc  -ffast-math  -fno-unsafe-math-optimizations -Wno-error=int-conversion -O3 -m64 -DSYSV -DSVR4 -D_REENTRANT -fPIC   -DconfigSPECTRE -I. -I/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include -c strain_engine_DcFuncLoad.c -o obj/optimize/5.0/strain_engine_DcFuncLoad.o || rm -f -f obj/optimize/5.0/strain_engine_DcFuncLoad.o
+<stdin>: In function 'strain_engine_DcFuncLoad':
+<stdin>:258:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+In file included from <stdin>:24:
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:260:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:261:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+rm -f -rf strain_engine_DcFuncLoad.c
+Compiling C file strain_engine_TranFuncDerLoad.c (optimize)
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/bin/64bit/ahdlcc 0 /eda/cadence/SPECTRE241/tools.lnx86/cdsgcc/gcc/12.3/bin/gcc  -ffast-math  -fno-unsafe-math-optimizations -Wno-error=int-conversion -O3 -m64 -DSYSV -DSVR4 -D_REENTRANT -fPIC   -DconfigSPECTRE -I. -I/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include -c strain_engine_TranFuncDerLoad.c -o obj/optimize/5.0/strain_engine_TranFuncDerLoad.o || rm -f -f obj/optimize/5.0/strain_engine_TranFuncDerLoad.o
+<stdin>: In function 'strain_engine_TranFuncDerLoad':
+<stdin>:316:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+In file included from <stdin>:24:
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:318:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:320:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:322:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:324:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:326:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:337:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:339:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:341:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:343:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:345:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:347:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:357:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:359:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:362:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:388:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:398:50: warning: passing argument 1 of 'aslDevInterAddDynamicElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2302:63: note: expected 'void *' but argument is of type 'long int'
+ 2302 | ASL_FUNC_DECL_START extern long aslDevInterAddDynamicElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                               ^~~~~~
+<stdin>:434:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:436:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:450:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:452:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+rm -f -rf strain_engine_TranFuncDerLoad.c
+Compiling C file strain_engine_TranFuncLoad.c (optimize)
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/bin/64bit/ahdlcc 0 /eda/cadence/SPECTRE241/tools.lnx86/cdsgcc/gcc/12.3/bin/gcc  -ffast-math  -fno-unsafe-math-optimizations -Wno-error=int-conversion -O3 -m64 -DSYSV -DSVR4 -D_REENTRANT -fPIC   -DconfigSPECTRE -I. -I/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include -c strain_engine_TranFuncLoad.c -o obj/optimize/5.0/strain_engine_TranFuncLoad.o || rm -f -f obj/optimize/5.0/strain_engine_TranFuncLoad.o
+<stdin>: In function 'strain_engine_TranFuncLoad':
+<stdin>:258:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+In file included from <stdin>:24:
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:260:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:263:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:289:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:299:50: warning: passing argument 1 of 'aslDevInterAddDynamicElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2302:63: note: expected 'void *' but argument is of type 'long int'
+ 2302 | ASL_FUNC_DECL_START extern long aslDevInterAddDynamicElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                               ^~~~~~
+<stdin>:335:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:337:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:351:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+<stdin>:353:49: warning: passing argument 1 of 'aslDevInterAddStaticElement' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2300:62: note: expected 'void *' but argument is of type 'long int'
+ 2300 | ASL_FUNC_DECL_START extern long aslDevInterAddStaticElement( void *, double, struct ahdlFuncModeParam * );
+      |                                                              ^~~~~~
+rm -f -rf strain_engine_TranFuncLoad.c
+Compiling C file strain_engine_OpPointCalc.c (optimize)
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/bin/64bit/ahdlcc 0 /eda/cadence/SPECTRE241/tools.lnx86/cdsgcc/gcc/12.3/bin/gcc  -ffast-math  -fno-unsafe-math-optimizations -Wno-error=int-conversion -O3 -m64 -DSYSV -DSVR4 -D_REENTRANT -fPIC   -DconfigSPECTRE -I. -I/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include -c strain_engine_OpPointCalc.c -o obj/optimize/5.0/strain_engine_OpPointCalc.o || rm -f -f obj/optimize/5.0/strain_engine_OpPointCalc.o
+rm -f -rf strain_engine_OpPointCalc.c
+Compiling C file strain_engine_PreFuncLoad.c (optimize)
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/bin/64bit/ahdlcc 0 /eda/cadence/SPECTRE241/tools.lnx86/cdsgcc/gcc/12.3/bin/gcc  -ffast-math  -fno-unsafe-math-optimizations -Wno-error=int-conversion -O3 -m64 -DSYSV -DSVR4 -D_REENTRANT -fPIC   -DconfigSPECTRE -I. -I/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include -c strain_engine_PreFuncLoad.c -o obj/optimize/5.0/strain_engine_PreFuncLoad.o || rm -f -f obj/optimize/5.0/strain_engine_PreFuncLoad.o
+rm -f -rf strain_engine_PreFuncLoad.c
+Compiling C file strain_engine_cmi_c.c (optimize)
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/bin/64bit/ahdlcc 0 /eda/cadence/SPECTRE241/tools.lnx86/cdsgcc/gcc/12.3/bin/gcc  -ffast-math  -fno-unsafe-math-optimizations -Wno-error=int-conversion -O3 -m64 -DSYSV -DSVR4 -D_REENTRANT -fPIC   -DconfigSPECTRE -I. -I/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include -I/eda/cadence/SPECTRE241/tools.lnx86/cmi/include -c strain_engine_cmi_c.c -o obj/optimize/5.0/strain_engine_cmi_c.o || rm -f -f obj/optimize/5.0/strain_engine_cmi_c.o
+<stdin>: In function 'strain_engine_pPrintDescription':
+<stdin>:1084:3: warning: implicit declaration of function 'msgWrite' [-Wimplicit-function-declaration]
+<stdin>:1086:67: warning: implicit declaration of function 'devGetRFinFreqDomain' [-Wimplicit-function-declaration]
+<stdin>: In function 'strain_engine_pGetInstanceParams':
+<stdin>:1315:41: warning: implicit declaration of function 'devGetInstKnotStatus'; did you mean 'devGetInstState'? [-Wimplicit-function-declaration]
+<stdin>: In function 'strain_engine_pDC_Load':
+<stdin>:1599:41: warning: passing argument 1 of 'aslDevFillZeorDiagonalElemet' makes pointer from integer without a cast [-Wint-conversion]
+In file included from <stdin>:24:
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2884:63: note: expected 'void *' but argument is of type 'long int'
+ 2884 | ASL_FUNC_DECL_START extern void aslDevFillZeorDiagonalElemet( void *, int, unsigned int, struct ahdlFuncModeParam * );
+      |                                                               ^~~~~~
+<stdin>: In function 'strain_engine_pCompare':
+<stdin>:2082:3: warning: implicit declaration of function 'spReplaceMatrixPointer'; did you mean 'aslDevLaplaceGetMatrixPointer'? [-Wimplicit-function-declaration]
+<stdin>:2108:38: warning: assignment to 'long int' from 'long int *' makes integer from pointer without a cast [-Wint-conversion]
+<stdin>:2109:23: warning: passing argument 1 of 'memcpy' makes pointer from integer without a cast [-Wint-conversion]
+In file included from /eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlPiCmi.h:5,
+                 from /eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:80:
+/usr/include/string.h:43:39: note: expected 'void * restrict' but argument is of type 'long int'
+   43 | extern void *memcpy (void *__restrict __dest, const void *__restrict __src,
+      |                      ~~~~~~~~~~~~~~~~~^~~~~~
+<stdin>:2109:59: warning: passing argument 2 of 'memcpy' makes pointer from integer without a cast [-Wint-conversion]
+/usr/include/string.h:43:70: note: expected 'const void * restrict' but argument is of type 'long int'
+   43 | extern void *memcpy (void *__restrict __dest, const void *__restrict __src,
+      |                                               ~~~~~~~~~~~~~~~~~~~~~~~^~~~~
+<stdin>:2111:38: warning: assignment to 'long int' from 'void *' makes integer from pointer without a cast [-Wint-conversion]
+<stdin>: In function 'strain_engine_pMapSignals':
+<stdin>:2171:26: warning: comparison between pointer and integer
+<stdin>: In function 'strain_engine_pGetMatrixPointers':
+<stdin>:2291:35: warning: assignment to 'long int' from 'void *' makes integer from pointer without a cast [-Wint-conversion]
+<stdin>: In function 'strain_engine_pAnalTranLoad':
+<stdin>:3090:42: warning: passing argument 1 of 'aslDevFillZeorDiagonalElemet' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2884:63: note: expected 'void *' but argument is of type 'long int'
+ 2884 | ASL_FUNC_DECL_START extern void aslDevFillZeorDiagonalElemet( void *, int, unsigned int, struct ahdlFuncModeParam * );
+      |                                                               ^~~~~~
+<stdin>: In function 'strain_engine_pSaveRestart':
+<stdin>:3352:4: warning: implicit declaration of function 'pklAccessDouble' [-Wimplicit-function-declaration]
+<stdin>:3353:30: warning: passing argument 2 of 'aslDevAvarSR' from incompatible pointer type [-Wincompatible-pointer-types]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:1230:58: note: expected 'struct ahdlAnalogVar *' but argument is of type 'char *'
+ 1230 | ASL_FUNC_DECL_START extern PklError_e aslDevAvarSR( int, struct ahdlAnalogVar *, char *, char *, char *, PklJar_t * );
+      |                                                          ^~~~~~~~~~~~~~~~~~~~~~
+<stdin>: In function 'strain_engine_pSaveRestartInst':
+<stdin>:3421:28: warning: passing argument 2 of 'aslDevAvarSR' from incompatible pointer type [-Wincompatible-pointer-types]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:1230:58: note: expected 'struct ahdlAnalogVar *' but argument is of type 'char *'
+ 1230 | ASL_FUNC_DECL_START extern PklError_e aslDevAvarSR( int, struct ahdlAnalogVar *, char *, char *, char *, PklJar_t * );
+      |                                                          ^~~~~~~~~~~~~~~~~~~~~~
+<stdin>: In function 'ahdlstrain_engineDescInstall':
+<stdin>:3590:2: warning: implicit declaration of function 'descSetDeviceType'; did you mean 'descSetDelete'? [-Wimplicit-function-declaration]
+<stdin>:3592:2: warning: implicit declaration of function 'descSetSetContrInfoPtr' [-Wimplicit-function-declaration]
+<stdin>:3599:2: warning: implicit declaration of function 'descSetCopySignals'; did you mean 'descSetMapSignals'? [-Wimplicit-function-declaration]
+<stdin>:3618:2: warning: implicit declaration of function 'descSetPreload'; did you mean 'descSetHB_Load'? [-Wimplicit-function-declaration]
+<stdin>:3629:2: warning: implicit declaration of function 'descSetPrintDescription' [-Wimplicit-function-declaration]
+<stdin>:3631:2: warning: implicit declaration of function 'descSetVATermInfo'; did you mean 'descSetGetInfo'? [-Wimplicit-function-declaration]
+<stdin>:3632:2: warning: implicit declaration of function 'descSetGetNodeNamesForBranch' [-Wimplicit-function-declaration]
+<stdin>:3633:2: warning: implicit declaration of function 'descSetGetLinearityFactor' [-Wimplicit-function-declaration]
+rm -f -rf strain_engine_cmi_c.c
+/eda/cadence/SPECTRE241/tools.lnx86/cdsgcc/gcc/12.3/bin/gcc -shared -O3 -m64 -fPIC -o obj/optimize/5.0/libahdlcmi_strain_engine.so ./obj/optimize/5.0/strain_engine_func.o ./obj/optimize/5.0/strain_engine_DcFuncDerLoad.o ./obj/optimize/5.0/strain_engine_DcFuncLoad.o ./obj/optimize/5.0/strain_engine_TranFuncDerLoad.o ./obj/optimize/5.0/strain_engine_TranFuncLoad.o ./obj/optimize/5.0/strain_engine_OpPointCalc.o ./obj/optimize/5.0/strain_engine_PreFuncLoad.o ./obj/optimize/5.0/strain_engine_cmi_c.o  -Wl,-rpath,/usr/lib -Wl,-rpath,/lib -lm -s 
+rm -f -f ./obj/optimize/5.0/strain_engine_func.o ./obj/optimize/5.0/strain_engine_DcFuncDerLoad.o ./obj/optimize/5.0/strain_engine_DcFuncLoad.o ./obj/optimize/5.0/strain_engine_TranFuncDerLoad.o ./obj/optimize/5.0/strain_engine_TranFuncLoad.o ./obj/optimize/5.0/strain_engine_OpPointCalc.o ./obj/optimize/5.0/strain_engine_PreFuncLoad.o ./obj/optimize/5.0/strain_engine_cmi_c.o 

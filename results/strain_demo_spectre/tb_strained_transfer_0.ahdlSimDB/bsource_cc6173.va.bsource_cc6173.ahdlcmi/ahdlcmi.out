@@ -1,0 +1,69 @@
+ahdlcmicompile: Compiling ahdlcmi in ./tb_strained_transfer_0.ahdlSimDB//bsource_cc6173.va.bsource_cc6173.ahdlcmi/Linux-64/ for Linux-64 with optimize using gcc on Wed Jun  3 23:48:00 CST 2026 [5.0]
+ahdlcmicompile: Generating makefile
+PATH:  /eda/cadence/SPECTRE241/bin:/eda/cadence/SPECTRE241/tools/bin/64bit:/eda/cadence/SPECTRE241/tools/bin:/home/yongfu/proj/strained-device-model/.venv/bin:/eda/cadence/PVS241/tools/bin:/eda/cadence/SPECTRE241/tools/spectre/bin:/eda/cadence/IC231/tools/bin:/eda/cadence/IC231/tools/dfII/bin:/eda/calibre2020/aoj_cal_2020.4_34.17/bin:/home/yongfu/.local/bin:/home/yongfu/bin:/usr/local/balsa/bin:/usr/share/Modules/bin:/usr/local/cuda/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/bin
+LD_LIBRARY_PATH:  /eda/cadence/SPECTRE241/tools/TPtools/libstdc++6/lib/64bit:/eda/cadence/SPECTRE241/tools/TPtools/cuda/lib64:/eda/cadence/SPECTRE241/tools/giganta/lib/64bit:/eda/cadence/SPECTRE241/tools/mdl/lib/64bit:/eda/cadence/SPECTRE241/tools/mmsim/lib/64bit:/eda/cadence/SPECTRE241/tools/hdf/lib/64bit:/eda/cadence/SPECTRE241/tools/python/64bit/lib:/eda/cadence/SPECTRE241/tools/inca/lib/64bit:/eda/cadence/SPECTRE241/tools/awrmwo/lib/64bit:/eda/cadence/SPECTRE241/tools/spectre/lib/64bit:/eda/cadence/SPECTRE241/tools/dfII/lib/64bit:/eda/cadence/SPECTRE241/tools/TPtools/libstdc++/lib64:/eda/cadence/SPECTRE241/tools/TPtools/zlib/lib64:/eda/cadence/SPECTRE241/tools/TPtools/abseil/lib64:/eda/cadence/SPECTRE241/tools/TPtools/grpc/lib64:/eda/cadence/SPECTRE241/tools/TPtools/protobuf/lib64:/eda/cadence/SPECTRE241/tools/TPtools/libffi/lib64:/eda/cadence/SPECTRE241/tools/fmc/lib/64bit:/eda/cadence/SPECTRE241/tools/lib/64bit:/eda/cadence/SPECTRE241/tools/lib/64bit:/eda/cadence/SPECTRE241/tools/lib:/eda/cadence/SPECTRE241/tools/lib/64bit/RHEL/RHEL9:/usr/local/balsa/lib:/usr/local/lib
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/bin/gnumake -j1 -f GNUmakefile
+Cleaning ./obj/optimize/5.0
+rm -f -rf ./obj/optimize/5.0
+Compiling C file bsource_cc6173.c (optimize)
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/bin/64bit/ahdlcc 0 /eda/cadence/SPECTRE241/tools.lnx86/cdsgcc/gcc/12.3/bin/gcc  -ffast-math  -fno-unsafe-math-optimizations -Wno-error=int-conversion -O3 -m64 -DSYSV -DSVR4 -D_REENTRANT -fPIC   -DconfigSPECTRE -I. -I/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include -c bsource_cc6173.c -o obj/optimize/5.0/bsource_cc6173.o || rm -f -f obj/optimize/5.0/bsource_cc6173.o
+<stdin>: In function 'bsource_cc6173_pGetInstanceParams':
+<stdin>:1906:69: warning: implicit declaration of function 'devGetInstKnotStatus'; did you mean 'devGetInstState'? [-Wimplicit-function-declaration]
+<stdin>: In function 'bsource_cc6173_pDC_Load':
+<stdin>:2190:41: warning: passing argument 1 of 'aslDevFillZeorDiagonalElemet' makes pointer from integer without a cast [-Wint-conversion]
+In file included from <stdin>:24:
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2884:63: note: expected 'void *' but argument is of type 'long int'
+ 2884 | ASL_FUNC_DECL_START extern void aslDevFillZeorDiagonalElemet( void *, int, unsigned int, struct ahdlFuncModeParam * );
+      |                                                               ^~~~~~
+<stdin>: In function 'bsource_cc6173_pCloneStencil':
+<stdin>:2516:36: warning: assignment to 'long int' from 'void *' makes integer from pointer without a cast [-Wint-conversion]
+<stdin>:2517:33: warning: passing argument 1 of 'aslDevMemcpy_wrap' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:1371:53: note: expected 'void *' but argument is of type 'long int'
+ 1371 | ASL_FUNC_DECL_START extern void *aslDevMemcpy_wrap( void *, const void *, size_t );
+      |                                                     ^~~~~~
+<stdin>:2517:67: warning: passing argument 2 of 'aslDevMemcpy_wrap' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:1371:61: note: expected 'const void *' but argument is of type 'long int'
+ 1371 | ASL_FUNC_DECL_START extern void *aslDevMemcpy_wrap( void *, const void *, size_t );
+      |                                                             ^~~~~~~~~~~~
+<stdin>: In function 'bsource_cc6173_pCompare':
+<stdin>:2622:37: warning: assignment to 'long int' from 'long int *' makes integer from pointer without a cast [-Wint-conversion]
+<stdin>:2623:23: warning: passing argument 1 of 'memcpy' makes pointer from integer without a cast [-Wint-conversion]
+In file included from /eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlPiCmi.h:5,
+                 from /eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:80:
+/usr/include/string.h:43:39: note: expected 'void * restrict' but argument is of type 'long int'
+   43 | extern void *memcpy (void *__restrict __dest, const void *__restrict __src,
+      |                      ~~~~~~~~~~~~~~~~~^~~~~~
+<stdin>:2623:58: warning: passing argument 2 of 'memcpy' makes pointer from integer without a cast [-Wint-conversion]
+/usr/include/string.h:43:70: note: expected 'const void * restrict' but argument is of type 'long int'
+   43 | extern void *memcpy (void *__restrict __dest, const void *__restrict __src,
+      |                                               ~~~~~~~~~~~~~~~~~~~~~~~^~~~~
+<stdin>:2625:37: warning: assignment to 'long int' from 'void *' makes integer from pointer without a cast [-Wint-conversion]
+<stdin>: In function 'bsource_cc6173_pGetMatrixPointers':
+<stdin>:2793:34: warning: assignment to 'long int' from 'void *' makes integer from pointer without a cast [-Wint-conversion]
+<stdin>: In function 'bsource_cc6173_pAnalTranLoad':
+<stdin>:3504:42: warning: passing argument 1 of 'aslDevFillZeorDiagonalElemet' makes pointer from integer without a cast [-Wint-conversion]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:2884:63: note: expected 'void *' but argument is of type 'long int'
+ 2884 | ASL_FUNC_DECL_START extern void aslDevFillZeorDiagonalElemet( void *, int, unsigned int, struct ahdlFuncModeParam * );
+      |                                                               ^~~~~~
+<stdin>: In function 'bsource_cc6173_pSaveRestart':
+<stdin>:3766:4: warning: implicit declaration of function 'pklAccessDouble' [-Wimplicit-function-declaration]
+<stdin>:3767:30: warning: passing argument 2 of 'aslDevAvarSR' from incompatible pointer type [-Wincompatible-pointer-types]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:1230:58: note: expected 'struct ahdlAnalogVar *' but argument is of type 'char *'
+ 1230 | ASL_FUNC_DECL_START extern PklError_e aslDevAvarSR( int, struct ahdlAnalogVar *, char *, char *, char *, PklJar_t * );
+      |                                                          ^~~~~~~~~~~~~~~~~~~~~~
+<stdin>: In function 'bsource_cc6173_pSaveRestartInst':
+<stdin>:3835:28: warning: passing argument 2 of 'aslDevAvarSR' from incompatible pointer type [-Wincompatible-pointer-types]
+/eda/cadence/SPECTRE241/tools.lnx86/spectre/ahdlcmi/include/ahdlDevLibGlobal.h:1230:58: note: expected 'struct ahdlAnalogVar *' but argument is of type 'char *'
+ 1230 | ASL_FUNC_DECL_START extern PklError_e aslDevAvarSR( int, struct ahdlAnalogVar *, char *, char *, char *, PklJar_t * );
+      |                                                          ^~~~~~~~~~~~~~~~~~~~~~
+<stdin>: In function 'ahdlbsource_cc6173DescInstall':
+<stdin>:3968:2: warning: implicit declaration of function 'descSetDeviceType'; did you mean 'descSetDelete'? [-Wimplicit-function-declaration]
+<stdin>:3970:2: warning: implicit declaration of function 'descSetSetContrInfoPtr' [-Wimplicit-function-declaration]
+<stdin>:3977:2: warning: implicit declaration of function 'descSetCopySignals'; did you mean 'descSetMapSignals'? [-Wimplicit-function-declaration]
+<stdin>:3978:2: warning: implicit declaration of function 'descSetCloneStencil'; did you mean 'descSetDeleteStencil'? [-Wimplicit-function-declaration]
+<stdin>:4005:2: warning: implicit declaration of function 'descSetVATermInfo'; did you mean 'descSetGetInfo'? [-Wimplicit-function-declaration]
+<stdin>:4006:2: warning: implicit declaration of function 'descSetGetNodeNamesForBranch' [-Wimplicit-function-declaration]
+<stdin>:4007:2: warning: implicit declaration of function 'descSetGetLinearityFactor' [-Wimplicit-function-declaration]
+rm -f -rf bsource_cc6173.c
+/eda/cadence/SPECTRE241/tools.lnx86/cdsgcc/gcc/12.3/bin/gcc -shared -O3 -m64 -fPIC -o obj/optimize/5.0/libahdlcmi_bsource_cc6173.so ./obj/optimize/5.0/bsource_cc6173.o  -Wl,-rpath,/usr/lib -Wl,-rpath,/lib -lm -s 
+rm -f -f ./obj/optimize/5.0/bsource_cc6173.o 

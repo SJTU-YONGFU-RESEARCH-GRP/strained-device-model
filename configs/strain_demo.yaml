@@ -1,0 +1,43 @@
+title: Strain demo MOS (ngspice + Spectre validation)
+
+simulator: ngspice
+
+device:
+  subckt: strain_demo_mos
+  drain_port: d
+  gate_port: g
+  source_port: s
+  bulk_port: b
+  mobility_control_port: null
+  instance_params:
+    kp: 2e-4
+    vth: 0.35
+
+strain:
+  nu: 0.47
+  beta: 0.6
+  gamma: 0.0
+  vth0: 0.35
+  mu0: 0.02
+
+bias:
+  vdd: 1.0
+  vgs: 0.55
+  vss: 0.0
+
+sweeps:
+  strain_magnitude:
+    eps_s_max: 0.005
+    steps: 9
+    alpha: 0.0
+  strain_direction:
+    eps_s: 0.005
+    alpha_max: 1.5707963267948966
+    steps: 13
+  transfer:
+    enabled: true
+    vgs_min: 0.0
+    vgs_max: 1.0
+    steps: 21
+    eps_s_cases: [0.0, 0.0025, 0.005]
+    alpha: 0.0

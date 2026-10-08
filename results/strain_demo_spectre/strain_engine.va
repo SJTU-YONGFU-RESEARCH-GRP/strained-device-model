@@ -1,0 +1,58 @@
+// Generic strain-to-parameter engine (device-agnostic).
+//
+// Static core (Liu et al., IEEE TNANO 2022):
+//   eps_T = (eps_S / 2) * [1 - nu + (1 + nu) * cos(2 * alpha)]
+//   Vth_eff = Vth0 - beta * eps_T - beta_r * d(eps_T)/dt
+//   mu_eff  = mu0  + gamma * eps_T + gamma_r * d(eps_T)/dt
+//
+// Dynamic extensions (device-level):
+//   Option 2: mechanical low-pass on eps_S (tau_m)
+//   Option 3: strain-rate sensitivity (beta_r, gamma_r)
+//   Option 4: asymmetric load/unload tracking on eps_T (tau_load, tau_unload)
+
+`include "disciplines.vams"
+`include "constants.vams"
+
+module strain_engine(eps_s, alpha, dvth, dmu);
+
+  input eps_s, alpha;
+  output dvth, dmu;
+  electrical eps_s, alpha, dvth, dmu, eps_s_filt;
+
+  parameter real nu = 0.47 from (0.0:1.0);
+  parameter real beta = 1.0;
+  parameter real gamma = 0.0;
+  parameter real beta_r = 0.0;
+  parameter real gamma_r = 0.0;
+  parameter real vth0 = 0.5;
+  parameter real mu0 = 0.01;
+  parameter real tau_m = 0.0 from [0.0:inf);
+  parameter real tau_load = 1.0e-12 from (0.0:inf);
+  parameter real tau_unload = 1.0e-12 from (0.0:inf);
+
+  real eps_S, alpha_rad, eps_S_filt, eps_T_raw, eps_T, eps_T_dot;
+  real vth_eff, mu_eff, tau_eff, eps_T_state;
+
+  analog begin
+    eps_S = V(eps_s);
+    alpha_rad = V(alpha);
+
+    // First-order low-pass: H(s) = 1 / (1 + s*tau_m). Use a tiny tau when disabled.
+    V(eps_s_filt) <+ laplace_nd(V(eps_s), {1.0}, {1.0, max(tau_m, 1e-30)});
+    eps_S_filt = V(eps_s_filt);
+
+    eps_T_raw = (eps_S_filt / 2.0) * (1.0 - nu + (1.0 + nu) * cos(2.0 * alpha_rad));
+
+    tau_eff = (eps_T_raw >= eps_T_state) ? tau_load : tau_unload;
+    eps_T_dot = (eps_T_raw - eps_T_state) / tau_eff;
+    eps_T_state = idt(eps_T_dot, eps_T_raw);
+    eps_T = eps_T_state;
+
+    vth_eff = vth0 - beta * eps_T - beta_r * eps_T_dot;
+    mu_eff = mu0 + gamma * eps_T + gamma_r * eps_T_dot;
+
+    V(dvth) <+ vth_eff - vth0;
+    V(dmu) <+ mu_eff - mu0;
+  end
+
+endmodule

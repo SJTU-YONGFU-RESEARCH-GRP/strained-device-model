@@ -1,0 +1,62 @@
+cff-version: 1.2.0
+message: >-
+  If you use this software, please cite the accepted IFETC 2026 paper.
+  Proceedings pages and a DOI are not yet assigned.
+type: software
+title: "strained-device-model: Strain-aware SPICE wrapper and simulation workflow"
+authors:
+  - family-names: Wang
+    given-names: Chao
+    affiliation: School of Integrated Circuits, Shanghai Jiao Tong University
+  - family-names: Du
+    given-names: Haochen
+    affiliation: School of Integrated Circuits, Shanghai Jiao Tong University
+  - family-names: Hou
+    given-names: Yuting
+    affiliation: School of Integrated Circuits, Shanghai Jiao Tong University
+  - family-names: Zhao
+    given-names: Jian
+    affiliation: School of Integrated Circuits, Shanghai Jiao Tong University
+  - family-names: Li
+    given-names: Yongfu
+    affiliation: School of Integrated Circuits, Shanghai Jiao Tong University
+    email: yongfu.li@sjtu.edu.cn
+repository-code: https://github.com/SJTU-YONGFU-RESEARCH-GRP/strained-device-model
+url: https://github.com/SJTU-YONGFU-RESEARCH-GRP/strained-device-model
+license: CC-BY-4.0
+year: 2026
+preferred-citation:
+  type: conference-paper
+  title: >-
+    A Profile-Driven Dynamic Strain-Aware Compact Model Wrapper for Flexible
+    Electronics
+  authors:
+    - family-names: Wang
+      given-names: Chao
+      affiliation: School of Integrated Circuits, Shanghai Jiao Tong University
+    - family-names: Du
+      given-names: Haochen
+      affiliation: School of Integrated Circuits, Shanghai Jiao Tong University
+    - family-names: Hou
+      given-names: Yuting
+      affiliation: School of Integrated Circuits, Shanghai Jiao Tong University
+    - family-names: Zhao
+      given-names: Jian
+      affiliation: School of Integrated Circuits, Shanghai Jiao Tong University
+    - family-names: Li
+      given-names: Yongfu
+      affiliation: School of Integrated Circuits, Shanghai Jiao Tong University
+      email: yongfu.li@sjtu.edu.cn
+  year: 2026
+  collection-title: >-
+    2026 IEEE International Flexible Electronics Technology Conference (IFETC)
+  conference:
+    name: IEEE International Flexible Electronics Technology Conference
+    city: Shanghai
+    country: CN
+    date-start: 2026-10-11
+    date-end: 2026-10-14
+  publisher:
+    name: IEEE
+  url: https://attend.ieee.org/ifetc-2026/
+  notes: Accepted. Proceedings pages and a DOI are not yet assigned.

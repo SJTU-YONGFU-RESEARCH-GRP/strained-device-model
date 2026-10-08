@@ -1,0 +1,14 @@
+* BSIM3v3 PMOS (ngspice level=8) for strain-wrapper evaluation.
+*
+.subckt bsim3_pmos d g s b
+.param W=10u L=180n
+
+.model bsim3_pmos_mod pmos level=8 version=3.3.0
++ vth0=-0.42 u0=150e-4 tox=4.0e-9 nsub=5.0e16
++ vfb0=-1.0 phi=0.7 k1=0.55 k2=0.02
++ voff=-0.08 nfactor=1.0 eta0=0.08 etab=-0.07
++ wint=0 lint=0 xl=0 xw=0
++ cgso=1.0e-10 cgdo=1.0e-10 cgbo=1.0e-10
+
+M1 d g s b bsim3_pmos_mod W={W} L={L}
+.ends bsim3_pmos

@@ -1,0 +1,41 @@
+title: BSIM4 PMOS strain evaluation
+
+device:
+  subckt: bsim4_pmos
+  drain_port: d
+  gate_port: g
+  source_port: s
+  bulk_port: b
+  mobility_control_port: null
+  instance_params:
+    W: 10u
+    L: 180n
+
+strain:
+  nu: 0.47
+  beta: 0.8
+  gamma: 0.0
+  vth0: 0.42
+  mu0: 0.015
+
+bias:
+  vdd: -1.0
+  vgs: -0.75
+  vss: 0.0
+
+sweeps:
+  strain_magnitude:
+    eps_s_max: 0.005
+    steps: 11
+    alpha: 0.0
+  strain_direction:
+    eps_s: 0.005
+    alpha_max: 1.5707963267948966
+    steps: 17
+  transfer:
+    enabled: true
+    vgs_min: -1.2
+    vgs_max: 0.0
+    steps: 25
+    eps_s_cases: [0.0, 0.0025, 0.005]
+    alpha: 0.0

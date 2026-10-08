@@ -1,0 +1,144 @@
+
+Spectre (R) Circuit Simulator
+Version 24.1.0.167.isr2 64bit -- 28 Nov 2024
+Copyright (C) 1989-2024 Cadence Design Systems, Inc. All rights reserved worldwide. Cadence and Spectre are registered trademarks of Cadence Design Systems, Inc. All others are the property of their respective holders.
+
+Includes RSA BSAFE(R) Cryptographic or Security Protocol Software from RSA Security, Inc.
+
+User: yongfu   Host: river   HostID: 7F0100   PID: 2807231
+Memory  available: 365.1049 GB  physical: 405.0724 GB
+Linux   : Red Hat Enterprise Linux release 9.7 (Plow)
+CPU Type: Intel(R) Xeon(R) CPU E5-2678 v3 @ 2.50GHz
+        Socket: Processors [Frequency] (Hyperthreaded Processor)
+        0:       0 [2699.8] ( 24 ),  1 [2699.7] ( 25 ),  2 [2699.7] ( 26 )
+                 3 [2699.7] ( 27 ),  4 [2699.7] ( 28 ),  5 [2699.7] ( 29 )
+                 6 [2699.8] ( 30 ),  7 [2699.8] ( 31 ),  8 [2699.8] ( 32 )
+                 9 [2699.7] ( 33 ), 10 [2699.7] ( 34 ), 11 [2699.8] ( 35 )
+        1:      12 [2825.3] ( 36 ), 13 [2825.4] ( 37 ), 14 [2825.6] ( 38 )
+                15 [2825.3] ( 39 ), 16 [2825.4] ( 40 ), 17 [2899.7] ( 41 )
+                18 [2899.7] ( 42 ), 19 [2899.7] ( 43 ), 20 [2899.7] ( 44 )
+                21 [2899.7] ( 45 ), 22 [2899.7] ( 46 ), 23 [2899.8] ( 47 )
+        
+System load averages (1min, 5min, 15min) : 104.0 %, 98.2 %, 92.6 %
+Hyperthreading is enabled
+
+
+Simulating `tb_baseline_transfer_1.scs' on river at 11:47:47 PM, Wed Jun 3, 2026 (process id: 2807231).
+Current working directory: /home/yongfu/proj/strained-device-model/results/strain_demo_spectre
+Command line:
+    /eda/cadence/SPECTRE241/tools/bin/spectre -64 +log  \
+        tb_baseline_transfer_1.log tb_baseline_transfer_1.scs
+
+Licensing Information:
+[23:47:47.080345] Configured Lic search path (24.01-s002): /eda/cadence/license.dat
+
+Licensing Information:
+[23:47:47.412474] Periodic Lic check successful
+
+Loading /eda/cadence/SPECTRE241/tools.lnx86/cmi/lib/64bit/5.0/libinfineon_sh.so ...
+Loading /eda/cadence/SPECTRE241/tools.lnx86/cmi/lib/64bit/5.0/libphilips_I_sh.so ...
+Loading /eda/cadence/SPECTRE241/tools.lnx86/cmi/lib/64bit/5.0/libphilips_sh.so ...
+Loading /eda/cadence/SPECTRE241/tools.lnx86/cmi/lib/64bit/5.0/libsparam_sh.so ...
+Loading /eda/cadence/SPECTRE241/tools.lnx86/cmi/lib/64bit/5.0/libstmodels_sh.so ...
+Reading file:  /home/yongfu/proj/strained-device-model/results/strain_demo_spectre/tb_baseline_transfer_1.scs
+Reading file:  /eda/cadence/SPECTRE241/tools.lnx86/spectre/etc/configs/spectre.cfg
+Reading file:  /home/yongfu/proj/strained-device-model/results/strain_demo_spectre/strain_demo_mos.subckt
+Time for NDB Parsing: CPU = 198.91 ms, elapsed = 647.165 ms.
+Time accumulated: CPU = 321.941 ms, elapsed = 647.167 ms.
+Peak resident memory used = 191 Mbytes.
+
+Reading link:  /eda/cadence/SPECTRE241/tools.lnx86/spectre/etc/ahdl/discipline.h
+Reading file:  /eda/cadence/SPECTRE241/tools.lnx86/spectre/etc/ahdl/disciplines.vams
+Reading link:  /eda/cadence/SPECTRE241/tools.lnx86/spectre/etc/ahdl/constants.h
+Reading file:  /eda/cadence/SPECTRE241/tools.lnx86/spectre/etc/ahdl/constants.vams
+Created directory ./tb_baseline_transfer_1.ahdlSimDB/ (775)
+Created directory ./tb_baseline_transfer_1.ahdlSimDB//bsource_cc6173.va.bsource_cc6173.ahdlcmi/ (775)
+Created directory ./tb_baseline_transfer_1.ahdlSimDB//bsource_cc6173.va.bsource_cc6173.ahdlcmi/Linux-64/ (775)
+Compiling ahdlcmi module library for bsource_cc6173.
+Finished compilation in 2.21 s (elapsed) for bsource_cc6173.
+Installed compiled interface for bsource_cc6173.
+Time for Elaboration: CPU = 2.03114 s, elapsed = 2.30382 s.
+Time accumulated: CPU = 2.35323 s, elapsed = 2.95121 s.
+Peak resident memory used = 211 Mbytes.
+
+Loading /eda/cadence/SPECTRE241/tools.lnx86/mdl/lib/64bit/libSpectreEH_sh.so ...
+
+Time for EDB Visiting: CPU = 8.478 ms, elapsed = 4.71592 ms.
+Time accumulated: CPU = 2.36287 s, elapsed = 2.95608 s.
+Peak resident memory used = 216 Mbytes.
+
+
+Notice from spectre during topology check.
+    Only one connection to node `b'.
+
+
+Global user options:
+
+Scoped user options:
+
+Circuit inventory:
+              nodes 4
+     bsource_cc6173 1     
+            vsource 4     
+
+Analysis and control statement inventory:
+                 dc 1     
+
+Output statements:
+             .probe 1     
+           .measure 0     
+               save 0     
+
+Time for parsing: CPU = 17.442 ms, elapsed = 15.3909 ms.
+Time accumulated: CPU = 2.38144 s, elapsed = 2.97167 s.
+Peak resident memory used = 219 Mbytes.
+
+~~~~~~~~~~~~~~~~~~~~~~
+Pre-Simulation Summary
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+
+*******************************************
+DC Analysis `dcrun1': Vgs:dc = (0 V -> 1 V)
+*******************************************
+
+Opening the PSF file ./tb_baseline_transfer_1.raw/dcrun1.dc ...
+Important parameter values:
+    reltol = 1e-03
+    abstol(V) = 1 uV
+    abstol(I) = 1 pA
+    temp = 27 C
+    tnom = 27 C
+    tempeffects = all
+    gmindc = 1 pS
+
+Notice from spectre during DC analysis `dcrun1'.
+    No outputs were found. Loosening output filter criterion to `allpub'.
+
+......9......8......7......6......5......4......3......2......1......0
+
+Maximum value achieved for any signal of each quantity: 
+V: V(g) = 1 V
+I: I(Vdd:p) = 132.6 uA
+DC simulation time: CPU = 10.571 ms, elapsed = 6.10995 ms.
+
+Notice from spectre at dc = 1 V during DC analysis `dcrun1'.
+    The value of parameter 'dc' has been reset to the original value 0.
+
+Total time required for dc analysis `dcrun1': CPU = 10.649 ms, elapsed = 6.18482 ms, util. = 172%.
+Time accumulated: CPU = 2.42929 s, elapsed = 2.99708 s.
+Peak resident memory used = 221 Mbytes.
+
+Licensing Information:
+Lic Summary:
+[23:47:50.363083] Cdslmd servers:/eda/cadence/license.dat
+[23:47:50.363119] Feature usage summary:
+[23:47:50.363124] Virtuoso_Spectre
+
+
+Aggregate audit (11:47:50 PM, Wed Jun 3, 2026):
+Time used: CPU = 2.45 s, elapsed = 3.01 s, util. = 81.3%.
+Time spent in licensing: elapsed = 391 ms, percentage of total = 13%.
+Peak memory used = 221 Mbytes.
+Simulation started at: 11:47:47 PM, Wed Jun 3, 2026, ended at: 11:47:50 PM, Wed Jun 3, 2026, with elapsed time (wall clock): 3.01 s.
+spectre completes with 0 errors, 0 warnings, and 4 notices.

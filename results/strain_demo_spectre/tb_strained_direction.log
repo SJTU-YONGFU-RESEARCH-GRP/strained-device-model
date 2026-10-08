@@ -1,0 +1,171 @@
+
+Spectre (R) Circuit Simulator
+Version 24.1.0.167.isr2 64bit -- 28 Nov 2024
+Copyright (C) 1989-2024 Cadence Design Systems, Inc. All rights reserved worldwide. Cadence and Spectre are registered trademarks of Cadence Design Systems, Inc. All others are the property of their respective holders.
+
+Includes RSA BSAFE(R) Cryptographic or Security Protocol Software from RSA Security, Inc.
+
+User: yongfu   Host: river   HostID: 7F0100   PID: 2806741
+Memory  available: 365.3945 GB  physical: 405.0724 GB
+Linux   : Red Hat Enterprise Linux release 9.7 (Plow)
+CPU Type: Intel(R) Xeon(R) CPU E5-2678 v3 @ 2.50GHz
+All processors running at 2899.7 MHz
+        Socket: Processors (Hyperthreaded Processor)
+        0:       0 ( 24 ),  1 ( 25 ),  2 ( 26 ),  3 ( 27 ),  4 ( 28 )
+                 5 ( 29 ),  6 ( 30 ),  7 ( 31 ),  8 ( 32 ),  9 ( 33 )
+                10 ( 34 ), 11 ( 35 )
+        1:      12 ( 36 ), 13 ( 37 ), 14 ( 38 ), 15 ( 39 ), 16 ( 40 )
+                17 ( 41 ), 18 ( 42 ), 19 ( 43 ), 20 ( 44 ), 21 ( 45 )
+                22 ( 46 ), 23 ( 47 )
+        
+System load averages (1min, 5min, 15min) : 104.0 %, 98.1 %, 92.6 %
+Hyperthreading is enabled
+
+
+Simulating `tb_strained_direction.scs' on river at 11:47:39 PM, Wed Jun 3, 2026 (process id: 2806741).
+Current working directory: /home/yongfu/proj/strained-device-model/results/strain_demo_spectre
+Command line:
+    /eda/cadence/SPECTRE241/tools/bin/spectre -64 +log  \
+        tb_strained_direction.log tb_strained_direction.scs
+
+Licensing Information:
+[23:47:39.080353] Configured Lic search path (24.01-s002): /eda/cadence/license.dat
+
+Licensing Information:
+[23:47:39.349627] Periodic Lic check successful
+
+Loading /eda/cadence/SPECTRE241/tools.lnx86/cmi/lib/64bit/5.0/libinfineon_sh.so ...
+Loading /eda/cadence/SPECTRE241/tools.lnx86/cmi/lib/64bit/5.0/libphilips_I_sh.so ...
+Loading /eda/cadence/SPECTRE241/tools.lnx86/cmi/lib/64bit/5.0/libphilips_sh.so ...
+Loading /eda/cadence/SPECTRE241/tools.lnx86/cmi/lib/64bit/5.0/libsparam_sh.so ...
+Loading /eda/cadence/SPECTRE241/tools.lnx86/cmi/lib/64bit/5.0/libstmodels_sh.so ...
+Reading file:  /home/yongfu/proj/strained-device-model/results/strain_demo_spectre/tb_strained_direction.scs
+Reading file:  /eda/cadence/SPECTRE241/tools.lnx86/spectre/etc/configs/spectre.cfg
+Reading file:  /home/yongfu/proj/strained-device-model/results/strain_demo_spectre/strain_wrap.inc
+Reading file:  /home/yongfu/proj/strained-device-model/results/strain_demo_spectre/strain_engine.va
+Reading file:  /eda/cadence/SPECTRE241/tools.lnx86/spectre/etc/ahdl/disciplines.vams
+Reading file:  /eda/cadence/SPECTRE241/tools.lnx86/spectre/etc/ahdl/constants.vams
+Time for NDB Parsing: CPU = 310.358 ms, elapsed = 533.972 ms.
+Time accumulated: CPU = 429.437 ms, elapsed = 533.975 ms.
+Peak resident memory used = 194 Mbytes.
+
+
+Notice from spectre during AHDL read-in.
+    "strain_engine.va", line 20: The internal node 'eps_s_filt' has been converted to a real variable to improve simulation performance. If this conversion is not required, use `setenv CDS_AHDL_CONVERT_INTERNAL_NODES NO` and rerun the simulation.
+
+Created directory ./tb_strained_direction.ahdlSimDB/ (775)
+Created directory ./tb_strained_direction.ahdlSimDB//80383de8f4d79cb0dce0f2a4e706b2d0.strain_engine.ahdlcmi/ (775)
+Created directory ./tb_strained_direction.ahdlSimDB//80383de8f4d79cb0dce0f2a4e706b2d0.strain_engine.ahdlcmi/Linux-64/ (775)
+Compiling ahdlcmi module library for strain_engine.
+Finished compilation in 1.87 s (elapsed) for strain_engine.
+Installed compiled interface for strain_engine.
+Reading link:  /eda/cadence/SPECTRE241/tools.lnx86/spectre/etc/ahdl/discipline.h
+Reading link:  /eda/cadence/SPECTRE241/tools.lnx86/spectre/etc/ahdl/constants.h
+
+Warning from spectre during hierarchy flattening.
+    WARNING (SFE-32): "tb_strained_direction.scs" 10: Duplicate specification for parameter `nu' (using last value specified).
+    WARNING (SFE-32): "tb_strained_direction.scs" 10: Duplicate specification for parameter `beta' (using last value specified).
+    WARNING (SFE-32): "tb_strained_direction.scs" 10: Duplicate specification for parameter `gamma' (using last value specified).
+
+Opening directory ./tb_strained_direction.ahdlSimDB/ (775)
+Created directory ./tb_strained_direction.ahdlSimDB//bsource_cc6173.va.bsource_cc6173.ahdlcmi/ (775)
+Created directory ./tb_strained_direction.ahdlSimDB//bsource_cc6173.va.bsource_cc6173.ahdlcmi/Linux-64/ (775)
+Compiling ahdlcmi module library for bsource_cc6173.
+Finished compilation in 1.48 s (elapsed) for bsource_cc6173.
+Installed compiled interface for bsource_cc6173.
+
+Warning from spectre in `strain_aware_device':`Xwrap', during hierarchy flattening.
+    WARNING (SFE-29): "strain_wrap.inc" 14: Cannot set parameter `v'.
+
+Time for Elaboration: CPU = 3.50366 s, elapsed = 3.43205 s.
+Time accumulated: CPU = 3.93333 s, elapsed = 3.96638 s.
+Peak resident memory used = 210 Mbytes.
+
+Loading /eda/cadence/SPECTRE241/tools.lnx86/mdl/lib/64bit/libSpectreEH_sh.so ...
+
+Time for EDB Visiting: CPU = 9.794 ms, elapsed = 4.83203 ms.
+Time accumulated: CPU = 3.94327 s, elapsed = 3.97136 s.
+Peak resident memory used = 215 Mbytes.
+
+
+Notice from spectre during topology check.
+    Only one connection to the following 3 nodes:
+        b
+        Xwrap.dvth
+        Xwrap.dmu
+
+
+Global user options:
+
+Scoped user options:
+
+Circuit inventory:
+              nodes 9
+     bsource_cc6173 1     
+      strain_engine 1     
+            vsource 7     
+
+Analysis and control statement inventory:
+                 dc 1     
+
+Output statements:
+             .probe 1     
+           .measure 0     
+               save 0     
+
+Time for parsing: CPU = 17.656 ms, elapsed = 14.8191 ms.
+Time accumulated: CPU = 3.96106 s, elapsed = 3.9863 s.
+Peak resident memory used = 218 Mbytes.
+
+~~~~~~~~~~~~~~~~~~~~~~
+Pre-Simulation Summary
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+
+*************************************************
+DC Analysis `dcrun1': Valp:dc = (0 V -> 1.5708 V)
+*************************************************
+
+Opening the PSF file ./tb_strained_direction.raw/dcrun1.dc ...
+Important parameter values:
+    reltol = 1e-03
+    abstol(V) = 1 uV
+    abstol(I) = 1 pA
+    temp = 27 C
+    tnom = 27 C
+    tempeffects = all
+    gmindc = 1 pS
+
+Notice from spectre during DC analysis `dcrun1'.
+    No outputs were found. Loosening output filter criterion to `allpub'.
+
+......9......8......7......6......5......4......3......2......1......0
+
+Maximum value achieved for any signal of each quantity: 
+V: V(alpha) = 1.571 V
+I: I(Vdd:p) = 40.8 uA
+Maximum value of each quantity, excluding Verilog-A modules or dangling current sources:
+V: V(d) = 1 V
+I: I(Vdd:p) = 40.8 uA
+DC simulation time: CPU = 12.265 ms, elapsed = 6.78182 ms.
+
+Notice from spectre at dc = 1.5708 V during DC analysis `dcrun1'.
+    The value of parameter 'dc' has been reset to the original value 0.
+
+Total time required for dc analysis `dcrun1': CPU = 12.347 ms, elapsed = 6.86193 ms, util. = 180%.
+Time accumulated: CPU = 4.03443 s, elapsed = 4.03551 s.
+Peak resident memory used = 220 Mbytes.
+
+Licensing Information:
+Lic Summary:
+[23:47:43.493201] Cdslmd servers:/eda/cadence/license.dat
+[23:47:43.493244] Feature usage summary:
+[23:47:43.493245] Virtuoso_Spectre
+
+
+Aggregate audit (11:47:43 PM, Wed Jun 3, 2026):
+Time used: CPU = 4.05 s, elapsed = 4.05 s, util. = 100%.
+Time spent in licensing: elapsed = 327 ms, percentage of total = 8.07%.
+Peak memory used = 220 Mbytes.
+Simulation started at: 11:47:39 PM, Wed Jun 3, 2026, ended at: 11:47:43 PM, Wed Jun 3, 2026, with elapsed time (wall clock): 4.05 s.
+spectre completes with 0 errors, 4 warnings, and 5 notices.

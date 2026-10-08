@@ -1,0 +1,13 @@
+simulator lang=spice
+* baseline strain magnitude
+.include "strain_demo_mos.subckt"
+Veps eps_s 0 dc 0.0
+Valp alpha 0 dc 0.0
+Vdd d 0 dc 1.0
+Vgs g 0 dc 0.55
+Vss s 0 dc 0.0
+Vbb b 0 dc 0.0
+Xdev d g s b strain_demo_mos kp=2e-4 vth=0.35
+.dc Veps 0.0 0.005 0.000625
+.print dc v(eps_s) v(alpha) i(Vdd)
+.end
